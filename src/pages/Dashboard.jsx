@@ -7,6 +7,7 @@ import { getMaxWeight, calculateStreak, getWorkoutDays, formatRelativeDate } fro
 import ExportButton from '../components/ExportButton'
 import QuickLogModal from '../components/QuickLogModal'
 import UpdateProgressModal from '../components/UpdateProgressModal'
+import QuickEditModal from '../components/QuickEditModal'
 
 const CATEGORIES = [
   { key: 'Push',        label: 'Push',        emoji: '💪', colorClass: 'push'   },
@@ -186,7 +187,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab]           = useState('Push')
   const [showExport, setShowExport]         = useState(false)
   const [showQuickLog, setShowQuickLog]     = useState(false)
-  const [updateSession, setUpdateSession]   = useState(null) // session yang sedang di-update
+  const [updateSession, setUpdateSession]   = useState(null)
+  const [editExercise, setEditExercise]     = useState(null) // exercise yang sedang di-edit dari beranda
 
   const streak       = calculateStreak(workouts)
   const totalSessions = workouts.length
@@ -352,7 +354,7 @@ export default function Dashboard() {
           <span
             className="text-xs text-muted"
             style={{ cursor: 'pointer' }}
-            onClick={() => navigate('/history')}
+            onClick={() => navigate('/workout')}
           >
             Riwayat <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle' }} />
           </span>
@@ -404,8 +406,13 @@ export default function Dashboard() {
           catExercises.map(ex => {
             const { weight, unit, trend, prevWeight } = getLastWeight(workouts, ex.id)
             return (
-              <div key={ex.id} className="overload-row">
-                <div>
+              <div
+                key={ex.id}
+                className="overload-row"
+                style={{ cursor: 'pointer' }}
+                onClick={() => setEditExercise(ex)}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="overload-row-name">{ex.name}</div>
                   {trend && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
@@ -414,20 +421,36 @@ export default function Dashboard() {
                     </div>
                   )}
                   {!trend && (
-                    <div className="text-xs text-muted" style={{ marginTop: 2 }}>Belum pernah dilatih</div>
+                    <div className="text-xs text-muted" style={{ marginTop: 2 }}>Tap untuk mulai catat</div>
                   )}
                 </div>
-                <div className="overload-row-meta">
-                  {weight !== null ? (
-                    <>
-                      <div className="overload-row-weight">
-                        {unit === 'BW' || unit === 'SEC' ? unit : `${weight} ${unit}`}
-                      </div>
-                      <div className="text-xs text-muted">maks terakhir</div>
-                    </>
-                  ) : (
-                    <div className="text-xs text-muted">—</div>
-                  )}
+                {/* Weight + edit button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <div className="overload-row-meta">
+                    {weight !== null ? (
+                      <>
+                        <div className="overload-row-weight">
+                          {unit === 'BW' || unit === 'SEC' ? unit : `${weight} ${unit}`}
+                        </div>
+                        <div className="text-xs text-muted">terakhir</div>
+                      </>
+                    ) : (
+                      <div className="text-xs" style={{ color: 'var(--accent)', fontWeight: 700 }}>+ Catat</div>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      width: 30, height: 30,
+                      borderRadius: 8,
+                      background: CAT_BG[activeCat.colorClass],
+                      border: `1px solid rgba(${CAT_RGB[activeCat.colorClass]}, 0.3)`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: CAT_COLORS[activeCat.colorClass],
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Pencil size={13} />
+                  </div>
                 </div>
               </div>
             )
@@ -437,13 +460,13 @@ export default function Dashboard() {
 
       {/* ── Sesi Terakhir (selain hari ini) ── */}
       {lastSession && todaySessions.length === 0 && (
-        <div className="card" style={{ cursor: 'pointer' }} onClick={() => navigate('/history')}>
+        <div className="card" style={{ cursor: 'pointer' }} onClick={() => navigate('/workout')}>
           <div className="section-header">
-            <h2 style={{ fontSize: '0.9rem' }}>⏱ Sesi Terakhir</h2>
+            <h2 style={{ fontSize: '0.9rem' }}>📋 Sesi Terakhir</h2>
             <ChevronRight size={16} color="var(--text-muted)" />
           </div>
           <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 10 }}>
-            {lastSession.name || 'Latihan'} · {formatRelativeDate(lastSession.date)}
+            {lastSession.category || lastSession.name || 'Latihan'} · {formatRelativeDate(lastSession.date)}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {lastSession.exercises?.slice(0, 5).map(ex => (
@@ -480,6 +503,14 @@ export default function Dashboard() {
           session={updateSession}
           library={library}
           onClose={() => setUpdateSession(null)}
+        />
+      )}
+
+      {editExercise && (
+        <QuickEditModal
+          exercise={editExercise}
+          workouts={workouts}
+          onClose={() => setEditExercise(null)}
         />
       )}
     </div>

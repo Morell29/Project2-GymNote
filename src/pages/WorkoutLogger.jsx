@@ -1,18 +1,14 @@
 // src/pages/WorkoutLogger.jsx
-// Halaman Latihan — gabungan log latihan + riwayat semua sesi
-// Termasuk: tambah gerakan custom, update progress, hapus sesi
+// Halaman Latihan — riwayat semua sesi + tambah gerakan custom
+// (Timer-based session dihapus, fokus ke progressive overload tracking)
 
-import { useState, useEffect } from 'react'
-import { Plus, Save, X, Search, Clock, ChevronDown, ChevronUp,
-         Trash2, TrendingUp, Pencil, BookOpen, Dumbbell } from 'lucide-react'
-import ExerciseCard from '../components/ExerciseCard'
-import RestTimer from '../components/RestTimer'
+import { useState } from 'react'
+import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell } from 'lucide-react'
 import UpdateProgressModal from '../components/UpdateProgressModal'
-import { useWorkouts, useExerciseLibrary, useTemplates, useSettings } from '../hooks/useStorage'
-import { generateId, createBlankSet, formatRelativeDate,
-         calculateVolume, getMaxWeight } from '../utils/workoutUtils'
+import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
+import { generateId, formatRelativeDate, calculateVolume, getMaxWeight } from '../utils/workoutUtils'
 
-// ── Konstanta kategori ─────────────────────────────────────────────────────────
+// ── Konstanta ──────────────────────────────────────────────────────────────────
 const ALL_CATS = ['Push', 'Pull', 'Leg', 'Body Weight', 'Others']
 const UNITS    = ['KG', 'BAR', 'BW', 'SEC']
 
@@ -24,26 +20,8 @@ const CAT_META = {
   'Others':      { emoji: '⚡', color: 'var(--others-color)', bg: 'var(--others-bg)', rgb: '224,192,106' },
 }
 
-// ── Helper ─────────────────────────────────────────────────────────────────────
-function groupByCategory(lib) {
-  return lib.reduce((acc, ex) => {
-    if (!acc[ex.category]) acc[ex.category] = []
-    acc[ex.category].push(ex)
-    return acc
-  }, {})
-}
-
-function formatDuration(s) {
-  if (!s) return null
-  const m = Math.floor(s / 60)
-  const h = Math.floor(m / 60)
-  if (h > 0) return `${h}j ${m % 60}m`
-  return `${m}m`
-}
-
 function getCategoryFromSession(session, library) {
   if (session.category) return session.category
-  // Coba deteksi dari exercise pertama
   const firstEx = session.exercises?.[0]
   if (firstEx) {
     const def = library.find(l => l.id === firstEx.exerciseId)
@@ -52,18 +30,24 @@ function getCategoryFromSession(session, library) {
   return 'Others'
 }
 
+function formatDuration(s) {
+  if (!s) return null
+  const m = Math.floor(s / 60)
+  const h = Math.floor(m / 60)
+  return h > 0 ? `${h}j ${m % 60}m` : `${m}m`
+}
+
 // ── Modal: Tambah Gerakan Custom ───────────────────────────────────────────────
 function AddExerciseModal({ onClose, onAdded }) {
-  const [name, setName] = useState('')
-  const [cat, setCat]   = useState('Push')
-  const [unit, setUnit] = useState('KG')
+  const [name, setName]   = useState('')
+  const [cat, setCat]     = useState('Push')
+  const [unit, setUnit]   = useState('KG')
   const [error, setError] = useState('')
 
   const handleAdd = () => {
-    if (!name.trim()) { setError('Nama gerakan tidak boleh kosong'); return }
+    if (!name.trim()) { setError('Nama tidak boleh kosong'); return }
     const id = name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + Date.now()
-    const ex = { id, name: name.trim(), category: cat, defaultUnit: unit }
-    onAdded(ex)
+    onAdded({ id, name: name.trim(), category: cat, defaultUnit: unit })
     onClose()
   }
 
@@ -83,8 +67,7 @@ function AddExerciseModal({ onClose, onAdded }) {
         <div className="input-group mb-3">
           <label className="input-label">Nama Gerakan</label>
           <input
-            className="input"
-            id="input-ex-name"
+            className="input" id="input-ex-name"
             placeholder="misal: Incline Dumbbell Press"
             value={name}
             onChange={e => { setName(e.target.value); setError('') }}
@@ -106,23 +89,16 @@ function AddExerciseModal({ onClose, onAdded }) {
                   key={c}
                   onClick={() => setCat(c)}
                   style={{
-                    padding: '9px 6px',
-                    borderRadius: 'var(--radius-sm)',
+                    padding: '9px 6px', borderRadius: 'var(--radius-sm)',
                     border: `1.5px solid ${active ? m.color : 'var(--border)'}`,
                     background: active ? m.bg : 'var(--bg-card-2)',
                     color: active ? m.color : 'var(--text-muted)',
-                    fontWeight: 700,
-                    fontSize: '0.75rem',
-                    cursor: 'pointer',
+                    fontWeight: 700, fontSize: '0.75rem', cursor: 'pointer',
                     transition: 'var(--transition)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 3,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                   }}
                 >
-                  <span>{m.emoji}</span>
-                  <span>{c}</span>
+                  <span>{m.emoji}</span><span>{c}</span>
                 </button>
               )
             })}
@@ -134,23 +110,18 @@ function AddExerciseModal({ onClose, onAdded }) {
           <label className="input-label">Satuan</label>
           <div className="unit-toggle">
             {UNITS.map(u => (
-              <button
-                key={u}
-                className={unit === u ? 'active' : ''}
-                onClick={() => setUnit(u)}
-              >
+              <button key={u} className={unit === u ? 'active' : ''} onClick={() => setUnit(u)}>
                 {u}
               </button>
             ))}
           </div>
           <p className="text-xs text-muted" style={{ marginTop: 5 }}>
-            KG/BAR = beban · BW = bodyweight (hitung reps) · SEC = detik (plank, dll)
+            KG / BAR = beban · BW = bodyweight (reps) · SEC = waktu (plank, dll)
           </p>
         </div>
 
         <button
-          className="btn btn-primary btn-full"
-          id="btn-save-addex"
+          className="btn btn-primary btn-full" id="btn-save-addex"
           onClick={handleAdd}
           disabled={!name.trim()}
           style={{ opacity: name.trim() ? 1 : 0.45 }}
@@ -164,69 +135,51 @@ function AddExerciseModal({ onClose, onAdded }) {
 
 // ── Kartu Sesi Riwayat ─────────────────────────────────────────────────────────
 function SessionCard({ session, library, workouts, onUpdateProgress, onDelete }) {
-  const [expanded, setExpanded] = useState(false)
-  const [exDetail, setExDetail] = useState(null) // exerciseId yang expand grafiknya
+  const [expanded, setExpanded]   = useState(false)
+  const [exDetail, setExDetail]   = useState(null)
 
   const category = getCategoryFromSession(session, library)
   const meta     = CAT_META[category] || CAT_META['Others']
-
-  const exerciseCount = session.exercises?.length || 0
+  const exCount  = session.exercises?.length || 0
   const totalVol = session.exercises?.reduce((s, ex) => s + calculateVolume(ex), 0) || 0
-  const duration = formatDuration(session.duration)
+  const dur      = formatDuration(session.duration)
 
   const dateStr = new Date(session.date).toLocaleDateString('id-ID', {
     weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
   })
 
   return (
-    <div
-      style={{
-        background: 'var(--bg-card)',
-        border: `1.5px solid ${expanded ? `rgba(${meta.rgb},0.3)` : 'var(--border)'}`,
-        borderRadius: 'var(--radius-lg)',
-        marginBottom: 10,
-        overflow: 'hidden',
-        transition: 'border-color 0.2s',
-      }}
-    >
-      {/* Header row — tap to expand */}
+    <div style={{
+      background: 'var(--bg-card)',
+      border: `1.5px solid ${expanded ? `rgba(${meta.rgb},0.3)` : 'var(--border)'}`,
+      borderRadius: 'var(--radius-lg)', marginBottom: 10, overflow: 'hidden',
+      transition: 'border-color 0.2s',
+    }}>
+      {/* Header */}
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '13px 14px',
-          cursor: 'pointer',
-          gap: 10,
-        }}
+        style={{ display: 'flex', alignItems: 'center', padding: '13px 14px', cursor: 'pointer', gap: 10 }}
         onClick={() => setExpanded(p => !p)}
       >
-        {/* Category dot */}
-        <div
-          style={{
-            width: 36, height: 36,
-            borderRadius: 10,
-            background: meta.bg,
-            border: `1px solid rgba(${meta.rgb},0.3)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1rem', flexShrink: 0,
-          }}
-        >
+        <div style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: meta.bg, border: `1px solid rgba(${meta.rgb},0.3)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1rem', flexShrink: 0,
+        }}>
           {meta.emoji}
         </div>
 
-        {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 800, fontSize: '0.92rem', color: meta.color, marginBottom: 2 }}>
             {session.category || session.name || 'Latihan'}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             <span className="text-xs text-muted">{dateStr}</span>
-            {duration && <span className="text-xs text-muted">· {duration}</span>}
-            <span className="text-xs text-muted">· {exerciseCount} gerakan</span>
+            {dur && <span className="text-xs text-muted">· {dur}</span>}
+            <span className="text-xs text-muted">· {exCount} gerakan</span>
           </div>
         </div>
 
-        {/* Right: volume + expand arrow */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {totalVol > 0 && (
             <div style={{ textAlign: 'right' }}>
@@ -243,23 +196,18 @@ function SessionCard({ session, library, workouts, onUpdateProgress, onDelete })
         </div>
       </div>
 
-      {/* Expanded detail */}
+      {/* Expanded */}
       {expanded && (
         <div style={{ padding: '0 14px 14px', borderTop: '1px solid var(--border)' }}>
-
-          {/* Action buttons */}
+          {/* Buttons */}
           <div style={{ display: 'flex', gap: 8, paddingTop: 12, marginBottom: 12 }}>
             <button
               className="btn btn-sm"
               id={`btn-update-${session.id}`}
               onClick={() => onUpdateProgress(session)}
               style={{
-                background: meta.color,
-                color: 'var(--text-on-accent)',
-                fontWeight: 700,
-                fontSize: '0.78rem',
-                flex: 1,
-                gap: 5,
+                background: meta.color, color: 'var(--text-on-accent)',
+                fontWeight: 700, fontSize: '0.78rem', flex: 1, gap: 5,
               }}
             >
               <Pencil size={13} /> Update Progress
@@ -275,33 +223,23 @@ function SessionCard({ session, library, workouts, onUpdateProgress, onDelete })
           </div>
 
           {/* Exercise rows */}
-          {exerciseCount === 0 ? (
-            <div style={{ textAlign: 'center', padding: '12px 0', color: 'var(--text-muted)' }}>
-              <p className="text-xs">Belum ada gerakan — tap Update Progress untuk mengisi</p>
-            </div>
+          {exCount === 0 ? (
+            <p className="text-xs text-muted" style={{ textAlign: 'center', padding: '10px 0' }}>
+              Belum ada gerakan — tap Update Progress untuk mengisi
+            </p>
           ) : (
             session.exercises.map(ex => {
-              const def = library.find(l => l.id === ex.exerciseId)
-              const maxW = getMaxWeight(ex)
+              const def   = library.find(l => l.id === ex.exerciseId)
+              const maxW  = getMaxWeight(ex)
               const isOpen = exDetail === ex.exerciseId
 
               return (
-                <div
-                  key={ex.exerciseId}
-                  style={{
-                    background: 'var(--bg-card-2)',
-                    borderRadius: 'var(--radius-sm)',
-                    marginBottom: 6,
-                    overflow: 'hidden',
-                    border: '1px solid var(--border)',
-                  }}
-                >
-                  {/* Exercise header */}
+                <div key={ex.exerciseId} style={{
+                  background: 'var(--bg-card-2)', borderRadius: 'var(--radius-sm)',
+                  marginBottom: 6, overflow: 'hidden', border: '1px solid var(--border)',
+                }}>
                   <div
-                    style={{
-                      display: 'flex', alignItems: 'center',
-                      padding: '9px 12px', cursor: 'pointer', gap: 8,
-                    }}
+                    style={{ display: 'flex', alignItems: 'center', padding: '9px 12px', cursor: 'pointer', gap: 8 }}
                     onClick={() => setExDetail(isOpen ? null : ex.exerciseId)}
                   >
                     <span style={{ fontWeight: 700, fontSize: '0.85rem', flex: 1 }}>
@@ -312,28 +250,20 @@ function SessionCard({ session, library, workouts, onUpdateProgress, onDelete })
                         ? (ex.unit === 'BW' || ex.unit === 'SEC' ? ex.unit : `${maxW} ${ex.unit}`)
                         : '—'}
                     </span>
-                    <span className="text-xs text-muted" style={{ marginLeft: 4 }}>
-                      {ex.sets.length}×
-                    </span>
-                    {isOpen
-                      ? <ChevronUp size={13} color="var(--text-muted)" />
-                      : <ChevronDown size={13} color="var(--text-muted)" />
-                    }
+                    <span className="text-xs text-muted">{ex.sets.length}×</span>
+                    {isOpen ? <ChevronUp size={13} color="var(--text-muted)" /> : <ChevronDown size={13} color="var(--text-muted)" />}
                   </div>
 
-                  {/* Set details */}
                   {isOpen && (
                     <div style={{ padding: '0 12px 10px' }}>
                       <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '28px 1fr 1fr',
+                        display: 'grid', gridTemplateColumns: '28px 1fr 1fr',
                         gap: 6, marginBottom: 6,
-                        fontSize: '0.65rem', fontWeight: 700,
-                        color: 'var(--text-muted)', textTransform: 'uppercase',
-                        letterSpacing: '0.05em', textAlign: 'center',
+                        fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-muted)',
+                        textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center',
                       }}>
                         <span>Set</span>
-                        <span>{ex.unit === 'BW' ? 'Reps' : ex.unit === 'SEC' ? 'Detik' : `Berat (${ex.unit})`}</span>
+                        <span>{ex.unit === 'BW' ? 'Reps' : ex.unit === 'SEC' ? 'Detik' : `Berat`}</span>
                         <span>{ex.unit === 'BW' || ex.unit === 'SEC' ? '—' : 'Reps'}</span>
                       </div>
                       {ex.sets.map((s, idx) => (
@@ -366,287 +296,23 @@ function SessionCard({ session, library, workouts, onUpdateProgress, onDelete })
   )
 }
 
-// ── View: Sesi Aktif (timer-based) ─────────────────────────────────────────────
-function ActiveSessionView({ onSaved }) {
-  const { workouts, setWorkouts } = useWorkouts()
-  const { library, setLibrary }   = useExerciseLibrary()
-  const { templates }             = useTemplates()
-  const { settings }              = useSettings()
-
-  const [sessionId]    = useState(() => generateId())
-  const [sessionName, setSessionName] = useState('')
-  const [exercises, setExercises]     = useState([])
-  const [showPicker, setShowPicker]   = useState(false)
-  const [showTimer, setShowTimer]     = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [startTime]    = useState(new Date())
-  const [elapsed, setElapsed]         = useState(0)
-
-  useEffect(() => {
-    const t = setInterval(() => setElapsed(e => e + 1), 1000)
-    return () => clearInterval(t)
-  }, [])
-
-  const formatElapsed = (s) => {
-    const h = Math.floor(s / 3600)
-    const m = Math.floor((s % 3600) / 60)
-    const sec = s % 60
-    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
-    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
-  }
-
-  const addExercise = (ex) => {
-    if (exercises.some(e => e.exerciseId === ex.id)) return
-    setExercises(prev => [...prev, {
-      id: generateId(), exerciseId: ex.id,
-      unit: ex.defaultUnit || 'KG', sets: [createBlankSet()],
-    }])
-    setShowPicker(false)
-  }
-
-  const loadTemplate = (t) => {
-    const newEx = t.exercises
-      .map(exId => {
-        const def = library.find(l => l.id === exId)
-        if (!def || exercises.some(e => e.exerciseId === exId)) return null
-        return { id: generateId(), exerciseId: exId, unit: def.defaultUnit || 'KG', sets: [createBlankSet()] }
-      })
-      .filter(Boolean)
-    setExercises(prev => [...prev, ...newEx])
-    setSessionName(t.name)
-  }
-
-  const saveSession = () => {
-    if (!exercises.length) return
-    const session = {
-      id: sessionId,
-      name: sessionName || 'Latihan',
-      date: startTime.toISOString(),
-      duration: elapsed,
-      exercises,
-    }
-    setWorkouts(prev => [session, ...prev])
-    onSaved()
-  }
-
-  const grouped         = groupByCategory(library)
-  const filteredLibrary = searchQuery
-    ? library.filter(ex => ex.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : null
-  const doneCount = exercises.filter(ex => ex.sets.every(s => s.done) && ex.sets.length > 0).length
-
-  return (
-    <>
-      {/* Session name */}
-      <div className="page-header" style={{ paddingTop: 0 }}>
-        <input
-          className="input"
-          style={{ background: 'transparent', border: 'none', fontSize: '1.4rem', fontWeight: 800, padding: 0, outline: 'none' }}
-          placeholder="Nama sesi (misal: Push A)"
-          value={sessionName}
-          onChange={e => setSessionName(e.target.value)}
-        />
-      </div>
-
-      {/* Timer bar */}
-      <div className="flex items-center justify-between mb-4" style={{
-        background: 'var(--bg-card)', borderRadius: 'var(--radius-md)',
-        padding: '11px 16px', border: '1px solid var(--border)',
-      }}>
-        <div className="flex items-center gap-2">
-          <Clock size={15} color="var(--accent)" />
-          <span style={{ fontWeight: 700, color: 'var(--accent)', fontVariantNumeric: 'tabular-nums' }}>
-            {formatElapsed(elapsed)}
-          </span>
-          <span className="text-muted text-xs">durasi</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {exercises.length > 0 && (
-            <span className="text-xs text-muted">{doneCount}/{exercises.length} selesai</span>
-          )}
-          <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setShowTimer(true)}>⏱</button>
-        </div>
-      </div>
-
-      {/* Template picker */}
-      {exercises.length === 0 && (
-        <div className="mb-4">
-          <p className="text-sm text-muted mb-3" style={{ textAlign: 'center' }}>
-            Mulai dari template atau tambah gerakan manual
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
-            {templates.map(t => (
-              <button
-                key={t.id}
-                className="btn btn-ghost btn-sm"
-                style={{ flexDirection: 'column', gap: 4, padding: '12px 6px', height: 'auto' }}
-                onClick={() => loadTemplate(t)}
-              >
-                <span style={{ fontSize: '1.2rem' }}>{t.emoji}</span>
-                <span style={{ fontSize: '0.7rem' }}>{t.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Exercise cards */}
-      {exercises.map((ex, idx) => {
-        const def = library.find(l => l.id === ex.exerciseId)
-        return (
-          <ExerciseCard
-            key={ex.id}
-            exerciseEntry={ex}
-            exerciseDef={def}
-            workouts={workouts}
-            currentSessionId={sessionId}
-            onChange={(updated) => setExercises(prev => prev.map((e, i) => i === idx ? updated : e))}
-            onRemove={() => setExercises(prev => prev.filter((_, i) => i !== idx))}
-            onStartTimer={() => setShowTimer(true)}
-          />
-        )
-      })}
-
-      {/* Add exercise */}
-      <button
-        className="btn btn-ghost btn-full mb-4"
-        style={{ borderStyle: 'dashed', borderRadius: 'var(--radius-lg)', padding: 16 }}
-        onClick={() => setShowPicker(true)}
-      >
-        <Plus size={18} /> Tambah Gerakan
-      </button>
-
-      {/* Save */}
-      {exercises.length > 0 && (
-        <button className="btn btn-primary btn-full btn-lg" onClick={saveSession}>
-          <Save size={18} /> Simpan Sesi
-        </button>
-      )}
-
-      {/* Rest timer overlay */}
-      {showTimer && (
-        <RestTimer
-          defaultSeconds={settings.defaultRestSeconds || 90}
-          onClose={() => setShowTimer(false)}
-        />
-      )}
-
-      {/* Exercise picker */}
-      {showPicker && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowPicker(false)}>
-          <div className="modal-sheet">
-            <div className="modal-handle" />
-            <div className="flex items-center justify-between mb-4">
-              <h2>Pilih Gerakan</h2>
-              <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowPicker(false)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="input-group mb-4">
-              <div style={{ position: 'relative' }}>
-                <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input
-                  className="input" style={{ paddingLeft: 38 }}
-                  placeholder="Cari gerakan..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div style={{ maxHeight: '55vh', overflowY: 'auto' }}>
-              {filteredLibrary ? (
-                filteredLibrary.map(ex => (
-                  <button
-                    key={ex.id}
-                    className="history-item"
-                    style={{ width: '100%', textAlign: 'left', opacity: exercises.some(e => e.exerciseId === ex.id) ? 0.4 : 1 }}
-                    onClick={() => addExercise(ex)}
-                    disabled={exercises.some(e => e.exerciseId === ex.id)}
-                  >
-                    <div>
-                      <p style={{ fontWeight: 600 }}>{ex.name}</p>
-                      <p className="text-xs text-muted">{ex.category}</p>
-                    </div>
-                    <span className="badge badge-blue">{ex.defaultUnit}</span>
-                  </button>
-                ))
-              ) : (
-                Object.entries(grouped).map(([cat, exs]) => (
-                  <div key={cat} className="mb-3">
-                    <p className="text-xs fw-bold" style={{
-                      color: CAT_META[cat]?.color || 'var(--text-muted)',
-                      textTransform: 'uppercase', letterSpacing: '0.05em',
-                      padding: '0 4px', marginBottom: 6,
-                    }}>
-                      {CAT_META[cat]?.emoji} {cat}
-                    </p>
-                    {exs.map(ex => (
-                      <button
-                        key={ex.id}
-                        className="history-item"
-                        style={{ width: '100%', textAlign: 'left', opacity: exercises.some(e => e.exerciseId === ex.id) ? 0.4 : 1 }}
-                        onClick={() => addExercise(ex)}
-                        disabled={exercises.some(e => e.exerciseId === ex.id)}
-                      >
-                        <span style={{ fontWeight: 600 }}>{ex.name}</span>
-                        <span className="badge badge-blue" style={{ fontSize: '0.7rem' }}>{ex.defaultUnit}</span>
-                      </button>
-                    ))}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-// ── Main: WorkoutLogger (Latihan + Riwayat) ────────────────────────────────────
+// ── Main Page ──────────────────────────────────────────────────────────────────
 export default function WorkoutLogger() {
   const { workouts, setWorkouts } = useWorkouts()
   const { library, setLibrary }   = useExerciseLibrary()
 
-  const [view, setView]                   = useState('list') // 'list' | 'active'
   const [showAddExercise, setShowAddExercise] = useState(false)
-  const [updateSession, setUpdateSession] = useState(null)
-  const [filterCat, setFilterCat]         = useState('Semua')
+  const [updateSession, setUpdateSession]     = useState(null)
+  const [filterCat, setFilterCat]             = useState('Semua')
 
   const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))
 
-  const displayedSessions = filterCat === 'Semua'
+  const displayed = filterCat === 'Semua'
     ? sorted
-    : sorted.filter(s => {
-        const cat = getCategoryFromSession(s, library)
-        return cat === filterCat
-      })
+    : sorted.filter(s => getCategoryFromSession(s, library) === filterCat)
 
   const deleteSession = (id) => setWorkouts(prev => prev.filter(w => w.id !== id))
-
-  const handleAddExercise = (ex) => {
-    setLibrary(prev => [...prev, ex])
-  }
-
-  if (view === 'active') {
-    return (
-      <div className="page">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4, paddingTop: 16 }}>
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => setView('list')}
-            style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-          >
-            ← Kembali
-          </button>
-          <span className="text-xs text-muted">Sesi Aktif dengan Timer</span>
-        </div>
-        <ActiveSessionView onSaved={() => setView('list')} />
-      </div>
-    )
-  }
+  const handleAddEx   = (ex) => setLibrary(prev => [...prev, ex])
 
   return (
     <div className="page">
@@ -660,34 +326,21 @@ export default function WorkoutLogger() {
             {sorted.length} sesi tersimpan
           </p>
         </div>
-      </div>
-
-      {/* Action buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 18 }}>
         <button
-          className="btn btn-ghost"
-          id="btn-start-timer-session"
-          onClick={() => setView('active')}
-          style={{ flexDirection: 'column', gap: 5, padding: '14px 10px', height: 'auto', borderRadius: 'var(--radius-md)' }}
-        >
-          <Clock size={20} color="var(--accent)" />
-          <span style={{ fontSize: '0.78rem', fontWeight: 700 }}>Sesi dengan Timer</span>
-        </button>
-        <button
-          className="btn btn-ghost"
+          className="btn btn-ghost btn-sm"
           id="btn-add-custom-exercise"
           onClick={() => setShowAddExercise(true)}
-          style={{ flexDirection: 'column', gap: 5, padding: '14px 10px', height: 'auto', borderRadius: 'var(--radius-md)' }}
+          style={{ gap: 6 }}
         >
-          <Dumbbell size={20} color="var(--accent)" />
-          <span style={{ fontSize: '0.78rem', fontWeight: 700 }}>Tambah Gerakan</span>
+          <Dumbbell size={16} color="var(--accent)" />
+          <span style={{ fontSize: '0.82rem', fontWeight: 700 }}>+ Gerakan</span>
         </button>
       </div>
 
       {/* Filter tabs */}
       <div className="category-tabs mb-3">
-        {['Semua', ...Object.keys(CAT_META)].map(cat => {
-          const meta = CAT_META[cat]
+        {['Semua', ...ALL_CATS].map(cat => {
+          const meta   = CAT_META[cat]
           const active = filterCat === cat
           return (
             <button
@@ -695,14 +348,10 @@ export default function WorkoutLogger() {
               className="cat-tab"
               id={`filter-${cat.toLowerCase().replace(/\s/g,'-')}`}
               onClick={() => setFilterCat(cat)}
-              style={active && meta ? {
-                background: meta.bg,
-                borderColor: meta.color,
-                color: meta.color,
-              } : active ? {
-                background: 'var(--accent-glow-sm)',
-                borderColor: 'var(--border-accent)',
-                color: 'var(--accent)',
+              style={active ? meta ? {
+                background: meta.bg, borderColor: meta.color, color: meta.color,
+              } : {
+                background: 'var(--accent-glow-sm)', borderColor: 'var(--border-accent)', color: 'var(--accent)',
               } : {}}
             >
               {meta ? `${meta.emoji} ` : ''}{cat}
@@ -712,20 +361,18 @@ export default function WorkoutLogger() {
       </div>
 
       {/* Session list */}
-      {displayedSessions.length === 0 ? (
+      {displayed.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">
             {filterCat === 'Semua' ? '📭' : CAT_META[filterCat]?.emoji || '🏋️'}
           </div>
-          <h3>{filterCat === 'Semua' ? 'Belum ada latihan' : `Belum ada sesi ${filterCat}`}</h3>
+          <h3>{filterCat === 'Semua' ? 'Belum ada sesi latihan' : `Belum ada sesi ${filterCat}`}</h3>
           <p className="text-sm">
-            {filterCat === 'Semua'
-              ? 'Catat latihan dari Beranda atau mulai sesi dengan timer'
-              : `Coba catat latihan kategori ${filterCat} dari Beranda`}
+            Catat latihan dari Beranda dengan tombol "Catat Latihan Hari Ini"
           </p>
         </div>
       ) : (
-        displayedSessions.map(session => (
+        displayed.map(session => (
           <SessionCard
             key={session.id}
             session={session}
@@ -741,7 +388,7 @@ export default function WorkoutLogger() {
       {showAddExercise && (
         <AddExerciseModal
           onClose={() => setShowAddExercise(false)}
-          onAdded={handleAddExercise}
+          onAdded={handleAddEx}
         />
       )}
 
