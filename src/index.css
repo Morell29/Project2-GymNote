@@ -47,6 +47,8 @@
   --leg-bg: rgba(122, 206, 138, 0.12);
   --bw-color: #c98ae0;
   --bw-bg: rgba(201, 138, 224, 0.12);
+  --others-color: #e0c06a;
+  --others-bg: rgba(224, 192, 106, 0.12);
 
   /* Radius */
   --radius-sm: 8px;
@@ -771,10 +773,11 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
   flex-shrink: 0;
 }
 .cat-tab:hover { border-color: var(--border-hover); color: var(--text-secondary); }
-.cat-tab.active-push  { background: var(--push-bg);  border-color: var(--push-color);  color: var(--push-color); }
-.cat-tab.active-pull  { background: var(--pull-bg);  border-color: var(--pull-color);  color: var(--pull-color); }
-.cat-tab.active-leg   { background: var(--leg-bg);   border-color: var(--leg-color);   color: var(--leg-color); }
-.cat-tab.active-bw    { background: var(--bw-bg);    border-color: var(--bw-color);    color: var(--bw-color); }
+.cat-tab.active-push   { background: var(--push-bg);   border-color: var(--push-color);   color: var(--push-color); }
+.cat-tab.active-pull   { background: var(--pull-bg);   border-color: var(--pull-color);   color: var(--pull-color); }
+.cat-tab.active-leg    { background: var(--leg-bg);    border-color: var(--leg-color);    color: var(--leg-color); }
+.cat-tab.active-bw     { background: var(--bw-bg);     border-color: var(--bw-color);     color: var(--bw-color); }
+.cat-tab.active-others { background: var(--others-bg); border-color: var(--others-color); color: var(--others-color); }
 
 /* Overload Exercise Row */
 .overload-row {

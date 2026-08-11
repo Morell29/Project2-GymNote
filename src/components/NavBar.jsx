@@ -1,6 +1,6 @@
 // src/components/NavBar.jsx
 import { NavLink } from 'react-router-dom'
-import { Home, Dumbbell, History, Settings } from 'lucide-react'
+import { Home, Dumbbell, Settings } from 'lucide-react'
 
 export default function NavBar() {
   return (
@@ -12,10 +12,6 @@ export default function NavBar() {
       <NavLink to="/workout" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <Dumbbell size={22} />
         <span>Latihan</span>
-      </NavLink>
-      <NavLink to="/history" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-        <History size={22} />
-        <span>Riwayat</span>
       </NavLink>
       <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <Settings size={22} />

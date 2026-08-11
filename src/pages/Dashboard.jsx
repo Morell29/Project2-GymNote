@@ -1,33 +1,44 @@
 // src/pages/Dashboard.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Play, Download, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react'
+import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, Plus, Pencil } from 'lucide-react'
 import { useWorkouts, useExerciseLibrary, useSettings } from '../hooks/useStorage'
 import { getMaxWeight, calculateStreak, getWorkoutDays, formatRelativeDate } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
+import QuickLogModal from '../components/QuickLogModal'
+import UpdateProgressModal from '../components/UpdateProgressModal'
 
 const CATEGORIES = [
-  { key: 'Push',        label: 'Push',        emoji: '💪', colorClass: 'push' },
-  { key: 'Pull',        label: 'Pull',        emoji: '🏋️', colorClass: 'pull' },
-  { key: 'Leg',         label: 'Leg',         emoji: '🦵', colorClass: 'leg'  },
-  { key: 'Body Weight', label: 'Body Weight', emoji: '🤸', colorClass: 'bw'   },
+  { key: 'Push',        label: 'Push',        emoji: '💪', colorClass: 'push'   },
+  { key: 'Pull',        label: 'Pull',        emoji: '🏋️', colorClass: 'pull'   },
+  { key: 'Leg',         label: 'Leg',         emoji: '🦵', colorClass: 'leg'    },
+  { key: 'Body Weight', label: 'Body Weight', emoji: '🤸', colorClass: 'bw'     },
+  { key: 'Others',      label: 'Others',      emoji: '⚡', colorClass: 'others' },
 ]
 
 const CAT_COLORS = {
-  push: 'var(--push-color)',
-  pull: 'var(--pull-color)',
-  leg:  'var(--leg-color)',
-  bw:   'var(--bw-color)',
+  push:   'var(--push-color)',
+  pull:   'var(--pull-color)',
+  leg:    'var(--leg-color)',
+  bw:     'var(--bw-color)',
+  others: 'var(--others-color)',
 }
 const CAT_BG = {
-  push: 'var(--push-bg)',
-  pull: 'var(--pull-bg)',
-  leg:  'var(--leg-bg)',
-  bw:   'var(--bw-bg)',
+  push:   'var(--push-bg)',
+  pull:   'var(--pull-bg)',
+  leg:    'var(--leg-bg)',
+  bw:     'var(--bw-bg)',
+  others: 'var(--others-bg)',
+}
+const CAT_RGB = {
+  push:   '224,123,106',
+  pull:   '106,158,224',
+  leg:    '122,206,138',
+  bw:     '201,138,224',
+  others: '224,192,106',
 }
 
 function getLastWeight(workouts, exerciseId) {
-  // Find most recent session that has this exercise
   const sessions = workouts
     .filter(w => w.exercises.some(e => e.exerciseId === exerciseId))
     .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -42,7 +53,6 @@ function getLastWeight(workouts, exerciseId) {
 
   const prev = sessions[1].exercises.find(e => e.exerciseId === exerciseId)
   const prevMax = getMaxWeight(prev)
-
   let trend = 'same'
   if (latestMax > prevMax) trend = 'up'
   else if (latestMax < prevMax) trend = 'down'
@@ -66,17 +76,132 @@ function TrendLabel({ trend, weight, prevWeight, unit }) {
   return <span className="trend-same" style={{ fontSize: '0.7rem', fontWeight: 700 }}>Sama</span>
 }
 
+// ── Komponen kartu catatan harian ─────────────────────────────────────────────
+function TodaySessionCard({ session, library, onUpdateProgress }) {
+  const category = session.category || session.name
+  const cat = CATEGORIES.find(c => c.key === category)
+  const meta = cat || { emoji: '🏋️', colorClass: 'others' }
+  const color = CAT_COLORS[meta.colorClass] || 'var(--accent)'
+  const bg    = CAT_BG[meta.colorClass]    || 'var(--accent-glow-sm)'
+  const rgb   = CAT_RGB[meta.colorClass]   || '212,184,150'
+
+  const exerciseCount = session.exercises?.length || 0
+  const hasProgress = exerciseCount > 0
+
+  return (
+    <div
+      style={{
+        background: bg,
+        border: `1.5px solid rgba(${rgb}, 0.35)`,
+        borderRadius: 'var(--radius-md)',
+        padding: '13px 14px',
+        marginBottom: 9,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: '1.2rem' }}>{meta.emoji}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 800, fontSize: '0.92rem', color: color }}>
+            {category}
+          </div>
+          <div className="text-xs text-muted" style={{ marginTop: 1 }}>
+            {hasProgress
+              ? `${exerciseCount} gerakan dicatat`
+              : 'Belum ada gerakan — klik Update Progress'}
+          </div>
+        </div>
+        <button
+          className="btn btn-sm"
+          id={`btn-update-${session.id}`}
+          onClick={() => onUpdateProgress(session)}
+          style={{
+            background: color,
+            color: 'var(--text-on-accent)',
+            fontWeight: 700,
+            fontSize: '0.75rem',
+            padding: '7px 12px',
+            borderRadius: 'var(--radius-sm)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+          }}
+        >
+          <Pencil size={12} />
+          Update Progress
+        </button>
+      </div>
+
+      {/* Preview exercises */}
+      {hasProgress && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 9 }}>
+          {session.exercises.slice(0, 4).map(ex => {
+            const def = library.find(l => l.id === ex.exerciseId)
+            const maxW = getMaxWeight(ex)
+            return (
+              <span
+                key={ex.exerciseId}
+                style={{
+                  background: `rgba(${rgb}, 0.15)`,
+                  border: `1px solid rgba(${rgb}, 0.25)`,
+                  borderRadius: 100,
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  color: color,
+                  padding: '2px 9px',
+                }}
+              >
+                {def?.name || ex.exerciseId}
+                {maxW > 0 && ` · ${maxW} ${ex.unit}`}
+              </span>
+            )
+          })}
+          {session.exercises.length > 4 && (
+            <span
+              style={{
+                background: `rgba(${rgb}, 0.1)`,
+                border: `1px solid rgba(${rgb}, 0.2)`,
+                borderRadius: 100,
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                padding: '2px 9px',
+              }}
+            >
+              +{session.exercises.length - 4} lagi
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate()
   const { workouts } = useWorkouts()
   const { library } = useExerciseLibrary()
   const { settings } = useSettings()
 
-  const [activeTab, setActiveTab] = useState('Push')
-  const [showExport, setShowExport] = useState(false)
+  const [activeTab, setActiveTab]           = useState('Push')
+  const [showExport, setShowExport]         = useState(false)
+  const [showQuickLog, setShowQuickLog]     = useState(false)
+  const [updateSession, setUpdateSession]   = useState(null) // session yang sedang di-update
 
-  const streak = calculateStreak(workouts)
+  const streak       = calculateStreak(workouts)
   const totalSessions = workouts.length
+
+  // Ambil sesi hari ini
+  const todayKey = (() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  })()
+
+  const todaySessions = workouts.filter(w => {
+    const d = new Date(w.date)
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+    return key === todayKey
+  })
 
   // Calendar — last 14 days
   const workoutDays = getWorkoutDays(workouts)
@@ -84,34 +209,45 @@ export default function Dashboard() {
     const d = new Date()
     d.setDate(d.getDate() - (13 - i))
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    const isToday = i === 13
     return {
       key,
       day: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d.getDay()],
       num: d.getDate(),
       hasWorkout: workoutDays.has(key),
-      isToday,
+      isToday: i === 13,
     }
   })
 
-  // Last session
-  const lastSession = workouts.length
+  // Last session (hari lain)
+  const lastSession = workouts.find(w => {
+    const d = new Date(w.date)
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+    return key !== todayKey
+  })
+
+  // PR count
+  const lastAnySession = workouts.length
     ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
     : null
 
-  // Exercises in active category
-  const activeCat = CATEGORIES.find(c => c.key === activeTab)
-  const catExercises = library.filter(ex => ex.category === activeTab)
-
-  // PR count (any exercise with trend=up in last session)
-  const prCount = lastSession?.exercises?.filter(ex => {
+  const prCount = lastAnySession?.exercises?.filter(ex => {
     const prev = workouts
-      .filter(w => w.id !== lastSession.id && w.exercises.some(e => e.exerciseId === ex.exerciseId))
+      .filter(w => w.id !== lastAnySession.id && w.exercises.some(e => e.exerciseId === ex.exerciseId))
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
       ?.exercises.find(e => e.exerciseId === ex.exerciseId)
     if (!prev) return false
     return getMaxWeight(ex) > getMaxWeight(prev)
   }).length || 0
+
+  const activeCat = CATEGORIES.find(c => c.key === activeTab)
+
+  // Handler: setelah QuickLog selesai → otomatis buka UpdateProgress
+  const handleLogged = (session) => {
+    setShowQuickLog(false)
+    setUpdateSession(session)
+  }
+
+  const catExercises = library.filter(ex => ex.category === activeTab)
 
   return (
     <div className="page">
@@ -121,12 +257,24 @@ export default function Dashboard() {
         <p className="text-muted text-xs" style={{ marginBottom: 4, color: 'var(--text-secondary)' }}>
           Selamat datang kembali,
         </p>
-        <h1 style={{ fontSize: '1.6rem', marginBottom: 12 }}>
-          {settings.username} <span style={{ color: 'var(--accent)' }}>💪</span>
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h1 style={{ fontSize: '1.55rem' }}>
+            {settings.username} <span style={{ color: 'var(--accent)' }}>💪</span>
+          </h1>
+          {/* Export icon — sudut kanan atas */}
+          <button
+            className="btn btn-ghost btn-icon btn-sm"
+            id="btn-export"
+            onClick={() => setShowExport(true)}
+            style={{ border: '1px solid var(--border-accent)', color: 'var(--accent)' }}
+            title="Export Progress"
+          >
+            <Download size={17} />
+          </button>
+        </div>
 
-        {/* Stats inline */}
-        <div style={{ display: 'flex', gap: 20 }}>
+        {/* Stats */}
+        <div style={{ display: 'flex', gap: 22 }}>
           <div>
             <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{streak}</div>
             <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>🔥 Streak</div>
@@ -144,27 +292,34 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Action Buttons ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, marginBottom: 20 }}>
-        <button
-          className="btn btn-primary btn-lg"
-          id="btn-start-workout"
-          onClick={() => navigate('/workout')}
-          style={{ borderRadius: 'var(--radius-lg)', fontSize: '1rem' }}
-        >
-          <Play size={18} fill="currentColor" />
-          Mulai Latihan
-        </button>
-        <button
-          className="btn btn-ghost"
-          id="btn-export"
-          onClick={() => setShowExport(true)}
-          style={{ padding: '0 16px', borderRadius: 'var(--radius-lg)' }}
-          title="Export Progress"
-        >
-          <Download size={20} />
-        </button>
-      </div>
+      {/* ── Tombol Catat Latihan ── */}
+      <button
+        className="btn btn-primary btn-full mb-4"
+        id="btn-catat-latihan"
+        onClick={() => setShowQuickLog(true)}
+        style={{ borderRadius: 'var(--radius-lg)', fontSize: '1rem', padding: '14px 20px' }}
+      >
+        <Plus size={19} />
+        Catat Latihan Hari Ini
+      </button>
+
+      {/* ── Catatan Hari Ini ── */}
+      {todaySessions.length > 0 && (
+        <div className="mb-4">
+          <div className="section-header" style={{ marginBottom: 10 }}>
+            <h2 style={{ fontSize: '0.9rem' }}>🗓 Hari Ini</h2>
+            <span className="badge badge-green">{todaySessions.length} sesi</span>
+          </div>
+          {todaySessions.map(s => (
+            <TodaySessionCard
+              key={s.id}
+              session={s}
+              library={library}
+              onUpdateProgress={setUpdateSession}
+            />
+          ))}
+        </div>
+      )}
 
       {/* ── Calendar Strip ── */}
       <div className="card mb-4">
@@ -193,13 +348,13 @@ export default function Dashboard() {
       {/* ── Progressive Overload Hub ── */}
       <div className="section-header" style={{ marginBottom: 10 }}>
         <h2 style={{ fontSize: '1rem' }}>📈 Progressive Overload</h2>
-        {lastSession && (
+        {workouts.length > 0 && (
           <span
             className="text-xs text-muted"
             style={{ cursor: 'pointer' }}
             onClick={() => navigate('/history')}
           >
-            Lihat Riwayat <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle' }} />
+            Riwayat <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle' }} />
           </span>
         )}
       </div>
@@ -225,7 +380,7 @@ export default function Dashboard() {
           background: CAT_BG[activeCat.colorClass],
           borderRadius: 'var(--radius-lg)',
           padding: '12px',
-          border: `1px solid rgba(${activeCat.colorClass === 'push' ? '224,123,106' : activeCat.colorClass === 'pull' ? '106,158,224' : activeCat.colorClass === 'leg' ? '122,206,138' : '201,138,224'}, 0.2)`,
+          border: `1px solid rgba(${CAT_RGB[activeCat.colorClass]}, 0.2)`,
           marginBottom: 16,
         }}
       >
@@ -280,8 +435,8 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ── Last Session ── */}
-      {lastSession && (
+      {/* ── Sesi Terakhir (selain hari ini) ── */}
+      {lastSession && todaySessions.length === 0 && (
         <div className="card" style={{ cursor: 'pointer' }} onClick={() => navigate('/history')}>
           <div className="section-header">
             <h2 style={{ fontSize: '0.9rem' }}>⏱ Sesi Terakhir</h2>
@@ -303,13 +458,28 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Export Modal ── */}
+      {/* ── Modals ── */}
       {showExport && (
         <ExportButton
           workouts={workouts}
           library={library}
           username={settings.username}
           onClose={() => setShowExport(false)}
+        />
+      )}
+
+      {showQuickLog && (
+        <QuickLogModal
+          onClose={() => setShowQuickLog(false)}
+          onLogged={handleLogged}
+        />
+      )}
+
+      {updateSession && (
+        <UpdateProgressModal
+          session={updateSession}
+          library={library}
+          onClose={() => setUpdateSession(null)}
         />
       )}
     </div>
