@@ -1,22 +1,82 @@
 // src/pages/Dashboard.jsx
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Flame, Trophy, Dumbbell, TrendingUp, ChevronRight, Play } from 'lucide-react'
-import { useWorkouts } from '../hooks/useStorage'
-import { useSettings } from '../hooks/useStorage'
-import { formatRelativeDate, getWorkoutDays, calculateStreak, calculateVolume, getMaxWeight } from '../utils/workoutUtils'
+import { Play, Download, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react'
+import { useWorkouts, useExerciseLibrary, useSettings } from '../hooks/useStorage'
+import { getMaxWeight, calculateStreak, getWorkoutDays, formatRelativeDate } from '../utils/workoutUtils'
+import ExportButton from '../components/ExportButton'
+
+const CATEGORIES = [
+  { key: 'Push',        label: 'Push',        emoji: '💪', colorClass: 'push' },
+  { key: 'Pull',        label: 'Pull',        emoji: '🏋️', colorClass: 'pull' },
+  { key: 'Leg',         label: 'Leg',         emoji: '🦵', colorClass: 'leg'  },
+  { key: 'Body Weight', label: 'Body Weight', emoji: '🤸', colorClass: 'bw'   },
+]
+
+const CAT_COLORS = {
+  push: 'var(--push-color)',
+  pull: 'var(--pull-color)',
+  leg:  'var(--leg-color)',
+  bw:   'var(--bw-color)',
+}
+const CAT_BG = {
+  push: 'var(--push-bg)',
+  pull: 'var(--pull-bg)',
+  leg:  'var(--leg-bg)',
+  bw:   'var(--bw-bg)',
+}
+
+function getLastWeight(workouts, exerciseId) {
+  // Find most recent session that has this exercise
+  const sessions = workouts
+    .filter(w => w.exercises.some(e => e.exerciseId === exerciseId))
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+
+  if (!sessions.length) return { weight: null, unit: 'KG', trend: null, prevWeight: null }
+
+  const latest = sessions[0].exercises.find(e => e.exerciseId === exerciseId)
+  const latestMax = getMaxWeight(latest)
+  const unit = latest.unit || 'KG'
+
+  if (sessions.length < 2) return { weight: latestMax, unit, trend: 'new', prevWeight: null }
+
+  const prev = sessions[1].exercises.find(e => e.exerciseId === exerciseId)
+  const prevMax = getMaxWeight(prev)
+
+  let trend = 'same'
+  if (latestMax > prevMax) trend = 'up'
+  else if (latestMax < prevMax) trend = 'down'
+
+  return { weight: latestMax, unit, trend, prevWeight: prevMax }
+}
+
+function TrendIcon({ trend }) {
+  if (trend === 'up')   return <TrendingUp  size={13} className="trend-up" />
+  if (trend === 'down') return <TrendingDown size={13} className="trend-down" />
+  if (trend === 'new')  return <span style={{ fontSize: '0.68rem', color: 'var(--accent)', fontWeight: 800 }}>NEW</span>
+  return <Minus size={13} className="trend-same" />
+}
+
+function TrendLabel({ trend, weight, prevWeight, unit }) {
+  if (trend === 'new')  return <span className="trend-new" style={{ fontSize: '0.7rem', fontWeight: 700 }}>Pertama!</span>
+  if (!prevWeight)      return null
+  const diff = weight - prevWeight
+  if (trend === 'up')   return <span className="trend-up"   style={{ fontSize: '0.7rem', fontWeight: 700 }}>+{diff} {unit}</span>
+  if (trend === 'down') return <span className="trend-down" style={{ fontSize: '0.7rem', fontWeight: 700 }}>{diff} {unit}</span>
+  return <span className="trend-same" style={{ fontSize: '0.7rem', fontWeight: 700 }}>Sama</span>
+}
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const { workouts } = useWorkouts()
+  const { library } = useExerciseLibrary()
   const { settings } = useSettings()
+
+  const [activeTab, setActiveTab] = useState('Push')
+  const [showExport, setShowExport] = useState(false)
 
   const streak = calculateStreak(workouts)
   const totalSessions = workouts.length
-
-  // Last session
-  const lastSession = workouts.length
-    ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
-    : null
 
   // Calendar — last 14 days
   const workoutDays = getWorkoutDays(workouts)
@@ -34,72 +94,85 @@ export default function Dashboard() {
     }
   })
 
-  // PR detection: find any new PRs in the last session
-  const prExercises = lastSession?.exercises?.filter(ex => {
+  // Last session
+  const lastSession = workouts.length
+    ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
+    : null
+
+  // Exercises in active category
+  const activeCat = CATEGORIES.find(c => c.key === activeTab)
+  const catExercises = library.filter(ex => ex.category === activeTab)
+
+  // PR count (any exercise with trend=up in last session)
+  const prCount = lastSession?.exercises?.filter(ex => {
     const prev = workouts
       .filter(w => w.id !== lastSession.id && w.exercises.some(e => e.exerciseId === ex.exerciseId))
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
       ?.exercises.find(e => e.exerciseId === ex.exerciseId)
     if (!prev) return false
     return getMaxWeight(ex) > getMaxWeight(prev)
-  }) || []
+  }).length || 0
 
   return (
     <div className="page">
-      {/* Header */}
-      <div className="page-header" style={{ paddingTop: 20 }}>
-        <div style={{ flex: 1 }}>
-          <p className="text-muted text-sm" style={{ marginBottom: 2 }}>Selamat datang kembali,</p>
-          <h1 style={{ fontSize: '1.8rem' }}>
-            {settings.username} <span className="accent" style={{ color: 'var(--accent)' }}>💪</span>
-          </h1>
-        </div>
-      </div>
 
-      {/* Stats row */}
-      <div className="stat-grid mb-4">
-        <div className="stat-box">
-          <div className="stat-val">{streak}</div>
-          <div className="stat-label">🔥 Streak</div>
-        </div>
-        <div className="stat-box">
-          <div className="stat-val">{totalSessions}</div>
-          <div className="stat-label">📅 Sesi</div>
-        </div>
-        <div className="stat-box">
-          <div className="stat-val">{prExercises.length > 0 ? prExercises.length : '—'}</div>
-          <div className="stat-label">🏆 PR Baru</div>
-        </div>
-      </div>
+      {/* ── Greeting Card ── */}
+      <div className="greeting-card">
+        <p className="text-muted text-xs" style={{ marginBottom: 4, color: 'var(--text-secondary)' }}>
+          Selamat datang kembali,
+        </p>
+        <h1 style={{ fontSize: '1.6rem', marginBottom: 12 }}>
+          {settings.username} <span style={{ color: 'var(--accent)' }}>💪</span>
+        </h1>
 
-      {/* Start workout CTA */}
-      <button
-        className="btn btn-primary btn-lg btn-full mb-4"
-        onClick={() => navigate('/workout')}
-        style={{ borderRadius: 'var(--radius-lg)', fontSize: '1.1rem' }}
-      >
-        <Play size={20} fill="currentColor" />
-        Mulai Latihan
-      </button>
-
-      {/* PR Banner */}
-      {prExercises.length > 0 && (
-        <div className="pr-banner mb-4">
-          <span style={{ fontSize: '1.4rem' }}>🏆</span>
+        {/* Stats inline */}
+        <div style={{ display: 'flex', gap: 20 }}>
           <div>
-            <p style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.9rem' }}>
-              PR Baru di Sesi Terakhir!
-            </p>
-            <p className="text-xs text-muted">{prExercises.map(e => e.exerciseId).join(', ')}</p>
+            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{streak}</div>
+            <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>🔥 Streak</div>
           </div>
+          <div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{totalSessions}</div>
+            <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>📅 Sesi</div>
+          </div>
+          {prCount > 0 && (
+            <div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{prCount}</div>
+              <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>🏆 PR Baru</div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Calendar */}
+      {/* ── Action Buttons ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, marginBottom: 20 }}>
+        <button
+          className="btn btn-primary btn-lg"
+          id="btn-start-workout"
+          onClick={() => navigate('/workout')}
+          style={{ borderRadius: 'var(--radius-lg)', fontSize: '1rem' }}
+        >
+          <Play size={18} fill="currentColor" />
+          Mulai Latihan
+        </button>
+        <button
+          className="btn btn-ghost"
+          id="btn-export"
+          onClick={() => setShowExport(true)}
+          style={{ padding: '0 16px', borderRadius: 'var(--radius-lg)' }}
+          title="Export Progress"
+        >
+          <Download size={20} />
+        </button>
+      </div>
+
+      {/* ── Calendar Strip ── */}
       <div className="card mb-4">
         <div className="section-header">
-          <h2>📅 Aktivitas 2 Minggu</h2>
-          <span className="badge badge-green">{streak > 0 ? `${streak} hari streak` : 'Mulai streak!'}</span>
+          <h2 style={{ fontSize: '0.9rem' }}>📅 Aktivitas 2 Minggu</h2>
+          {streak > 0 && (
+            <span className="badge badge-yellow">{streak} hari streak</span>
+          )}
         </div>
         <div className="calendar-strip">
           {calDays.map(d => (
@@ -117,33 +190,127 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Last session */}
-      {lastSession ? (
+      {/* ── Progressive Overload Hub ── */}
+      <div className="section-header" style={{ marginBottom: 10 }}>
+        <h2 style={{ fontSize: '1rem' }}>📈 Progressive Overload</h2>
+        {lastSession && (
+          <span
+            className="text-xs text-muted"
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/history')}
+          >
+            Lihat Riwayat <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle' }} />
+          </span>
+        )}
+      </div>
+
+      {/* Category Tabs */}
+      <div className="category-tabs">
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat.key}
+            id={`tab-${cat.colorClass}`}
+            className={`cat-tab ${activeTab === cat.key ? `active-${cat.colorClass}` : ''}`}
+            onClick={() => setActiveTab(cat.key)}
+          >
+            <span>{cat.emoji}</span>
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Exercise rows for active category */}
+      <div
+        style={{
+          background: CAT_BG[activeCat.colorClass],
+          borderRadius: 'var(--radius-lg)',
+          padding: '12px',
+          border: `1px solid rgba(${activeCat.colorClass === 'push' ? '224,123,106' : activeCat.colorClass === 'pull' ? '106,158,224' : activeCat.colorClass === 'leg' ? '122,206,138' : '201,138,224'}, 0.2)`,
+          marginBottom: 16,
+        }}
+      >
+        {/* Category header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+          <span style={{ fontSize: '1.1rem' }}>{activeCat.emoji}</span>
+          <span style={{ fontWeight: 800, fontSize: '0.9rem', color: CAT_COLORS[activeCat.colorClass] }}>
+            {activeCat.label}
+          </span>
+          <span className="text-xs text-muted" style={{ marginLeft: 'auto' }}>
+            {catExercises.length} latihan
+          </span>
+        </div>
+
+        {catExercises.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '24px 16px' }}>
+            <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.3 }}>🏋️</div>
+            <p className="text-xs text-muted">Belum ada latihan di kategori ini</p>
+          </div>
+        ) : (
+          catExercises.map(ex => {
+            const { weight, unit, trend, prevWeight } = getLastWeight(workouts, ex.id)
+            return (
+              <div key={ex.id} className="overload-row">
+                <div>
+                  <div className="overload-row-name">{ex.name}</div>
+                  {trend && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                      <TrendIcon trend={trend} />
+                      <TrendLabel trend={trend} weight={weight} prevWeight={prevWeight} unit={unit} />
+                    </div>
+                  )}
+                  {!trend && (
+                    <div className="text-xs text-muted" style={{ marginTop: 2 }}>Belum pernah dilatih</div>
+                  )}
+                </div>
+                <div className="overload-row-meta">
+                  {weight !== null ? (
+                    <>
+                      <div className="overload-row-weight">
+                        {unit === 'BW' || unit === 'SEC' ? unit : `${weight} ${unit}`}
+                      </div>
+                      <div className="text-xs text-muted">maks terakhir</div>
+                    </>
+                  ) : (
+                    <div className="text-xs text-muted">—</div>
+                  )}
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+
+      {/* ── Last Session ── */}
+      {lastSession && (
         <div className="card" style={{ cursor: 'pointer' }} onClick={() => navigate('/history')}>
           <div className="section-header">
-            <h2>⏱ Sesi Terakhir</h2>
-            <ChevronRight size={18} color="var(--text-muted)" />
+            <h2 style={{ fontSize: '0.9rem' }}>⏱ Sesi Terakhir</h2>
+            <ChevronRight size={16} color="var(--text-muted)" />
           </div>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 12 }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 10 }}>
             {lastSession.name || 'Latihan'} · {formatRelativeDate(lastSession.date)}
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {lastSession.exercises?.slice(0, 4).map(ex => (
-              <span key={ex.exerciseId} className="badge badge-blue">
-                {ex.exerciseId}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {lastSession.exercises?.slice(0, 5).map(ex => (
+              <span key={ex.exerciseId} className="badge badge-cream">
+                {library.find(l => l.id === ex.exerciseId)?.name || ex.exerciseId}
               </span>
             ))}
-            {lastSession.exercises?.length > 4 && (
-              <span className="badge badge-blue">+{lastSession.exercises.length - 4} lagi</span>
+            {lastSession.exercises?.length > 5 && (
+              <span className="badge badge-cream">+{lastSession.exercises.length - 5} lagi</span>
             )}
           </div>
         </div>
-      ) : (
-        <div className="card" style={{ textAlign: 'center', padding: 32 }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: 12, opacity: 0.3 }}>🏋️</div>
-          <h3 style={{ marginBottom: 8 }}>Belum ada sesi</h3>
-          <p className="text-sm">Mulai latihan pertamamu sekarang!</p>
-        </div>
+      )}
+
+      {/* ── Export Modal ── */}
+      {showExport && (
+        <ExportButton
+          workouts={workouts}
+          library={library}
+          username={settings.username}
+          onClose={() => setShowExport(false)}
+        />
       )}
     </div>
   )
