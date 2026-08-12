@@ -1,59 +1,53 @@
 // public/sw.js
-// Service Worker untuk GymNote PWA
-// Mengaktifkan mode offline & membuat app bisa diinstall sebagai native-like app
+// Service Worker untuk GymNote PWA — network-first strategy
+// Selalu ambil versi terbaru, fallback ke cache jika offline
 
-const CACHE_NAME = 'gymnote-v2'
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-]
+const CACHE_NAME = 'gymnote-v3'
 
-// Install: cache aset utama
+// Install: langsung aktifkan
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS)
-    })
-  )
   self.skipWaiting()
 })
 
-// Activate: hapus cache lama
+// Activate: hapus cache lama, langsung claim
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
   )
-  self.clients.claim()
 })
 
-// Fetch: cache-first untuk aset statis, network-first untuk lainnya
+// Fetch: network-first (selalu coba ambil yang terbaru)
 self.addEventListener('fetch', (event) => {
-  // Hanya handle request GET
   if (event.request.method !== 'GET') return
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached
-      return fetch(event.request).then((response) => {
-        // Cache response yang valid
-        if (response && response.status === 200 && response.type === 'basic') {
+  // Untuk navigasi (HTML), selalu network-first
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
           const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, clone)
-          })
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          return response
+        })
+        .catch(() => caches.match('/index.html'))
+    )
+    return
+  }
+
+  // Untuk asset lain: network-first with cache fallback
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
         }
         return response
-      }).catch(() => {
-        // Offline fallback ke index.html untuk navigasi
-        if (event.request.destination === 'document') {
-          return caches.match('/index.html')
-        }
       })
-    })
+      .catch(() => caches.match(event.request))
   )
 })
