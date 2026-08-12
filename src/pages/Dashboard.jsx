@@ -254,6 +254,9 @@ export default function Dashboard() {
   return (
     <div className="page">
 
+      {/* ── GYMNOTE Brand ── */}
+      <div className="brand-header">G Y M N O T E</div>
+
       {/* ── Greeting Card ── */}
       <div className="greeting-card">
         <p className="text-muted text-xs" style={{ marginBottom: 4, color: 'var(--text-secondary)' }}>

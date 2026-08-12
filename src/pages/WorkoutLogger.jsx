@@ -303,16 +303,31 @@ export default function WorkoutLogger() {
 
   const [showAddExercise, setShowAddExercise] = useState(false)
   const [updateSession, setUpdateSession]     = useState(null)
-  const [filterCat, setFilterCat]             = useState('Semua')
+  const [expandedCat, setExpandedCat]         = useState(null) // kategori yang sedang terbuka
 
   const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))
-
-  const displayed = filterCat === 'Semua'
-    ? sorted
-    : sorted.filter(s => getCategoryFromSession(s, library) === filterCat)
-
   const deleteSession = (id) => setWorkouts(prev => prev.filter(w => w.id !== id))
   const handleAddEx   = (ex) => setLibrary(prev => [...prev, ex])
+
+  // Hitung jumlah exercise per kategori
+  const catCounts = {}
+  ALL_CATS.forEach(cat => {
+    catCounts[cat] = library.filter(ex => ex.category === cat).length
+  })
+
+  // Hitung jumlah sesi per kategori
+  const sessionCounts = {}
+  ALL_CATS.forEach(cat => {
+    sessionCounts[cat] = workouts.filter(w => getCategoryFromSession(w, library) === cat).length
+  })
+
+  // Exercise dalam kategori yang di-expand
+  const expandedExercises = expandedCat ? library.filter(ex => ex.category === expandedCat) : []
+
+  // Sesi di kategori yang dipilih
+  const expandedSessions = expandedCat
+    ? sorted.filter(s => getCategoryFromSession(s, library) === expandedCat)
+    : []
 
   return (
     <div className="page">
@@ -323,7 +338,7 @@ export default function WorkoutLogger() {
             Latihan <span style={{ color: 'var(--accent)' }}>🏋️</span>
           </h1>
           <p className="text-sm text-muted" style={{ marginTop: 2 }}>
-            {sorted.length} sesi tersimpan
+            {sorted.length} sesi · {library.length} gerakan tersimpan
           </p>
         </div>
         <button
@@ -337,52 +352,144 @@ export default function WorkoutLogger() {
         </button>
       </div>
 
-      {/* Filter tabs */}
-      <div className="category-tabs mb-3">
-        {['Semua', ...ALL_CATS].map(cat => {
-          const meta   = CAT_META[cat]
-          const active = filterCat === cat
+      {/* Vertical Category List */}
+      <div className="cat-list-vertical">
+        {ALL_CATS.map(cat => {
+          const meta       = CAT_META[cat]
+          const isExpanded = expandedCat === cat
+          const exCount    = catCounts[cat]
+          const sesCount   = sessionCounts[cat]
+
           return (
-            <button
-              key={cat}
-              className="cat-tab"
-              id={`filter-${cat.toLowerCase().replace(/\s/g,'-')}`}
-              onClick={() => setFilterCat(cat)}
-              style={active ? meta ? {
-                background: meta.bg, borderColor: meta.color, color: meta.color,
-              } : {
-                background: 'var(--accent-glow-sm)', borderColor: 'var(--border-accent)', color: 'var(--accent)',
-              } : {}}
-            >
-              {meta ? `${meta.emoji} ` : ''}{cat}
-            </button>
+            <div key={cat}>
+              {/* Category row */}
+              <div
+                className="cat-list-item"
+                id={`cat-${cat.toLowerCase().replace(/\s/g, '-')}`}
+                onClick={() => setExpandedCat(isExpanded ? null : cat)}
+                style={{
+                  borderColor: isExpanded ? meta.color : 'var(--border)',
+                  background: isExpanded ? meta.bg : 'var(--bg-card)',
+                }}
+              >
+                <div
+                  className="cat-icon"
+                  style={{
+                    background: isExpanded ? `rgba(${meta.rgb}, 0.2)` : meta.bg,
+                    border: `1.5px solid rgba(${meta.rgb}, ${isExpanded ? 0.4 : 0.2})`,
+                  }}
+                >
+                  {meta.emoji}
+                </div>
+                <div className="cat-info">
+                  <div className="cat-name" style={{ color: isExpanded ? meta.color : 'var(--text-primary)' }}>
+                    {cat}
+                  </div>
+                  <div className="cat-count" style={{ color: isExpanded ? meta.color : 'var(--text-muted)' }}>
+                    {exCount} gerakan · {sesCount} sesi
+                  </div>
+                </div>
+                <div
+                  className="cat-arrow"
+                  style={{
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    color: isExpanded ? meta.color : 'var(--text-muted)',
+                  }}
+                >
+                  <ChevronDown size={18} />
+                </div>
+              </div>
+
+              {/* Expanded: exercise list + session history */}
+              {isExpanded && (
+                <div className="exercise-list-enter" style={{ marginTop: 4, marginBottom: 8 }}>
+                  {/* Exercise gerakan */}
+                  {expandedExercises.length > 0 && (
+                    <div style={{ marginBottom: 10 }}>
+                      <div className="text-xs text-muted" style={{
+                        fontWeight: 700, textTransform: 'uppercase',
+                        letterSpacing: '0.05em', padding: '8px 0 6px 24px',
+                        color: meta.color, opacity: 0.7,
+                      }}>
+                        Gerakan
+                      </div>
+                      {expandedExercises.map((ex, idx) => {
+                        // Cari data terakhir untuk exercise ini
+                        const lastSession = sorted.find(w =>
+                          w.exercises?.some(e => e.exerciseId === ex.id)
+                        )
+                        const lastEntry = lastSession?.exercises?.find(e => e.exerciseId === ex.id)
+                        const maxW = lastEntry ? getMaxWeight(lastEntry) : null
+
+                        return (
+                          <div
+                            key={ex.id}
+                            className="exercise-row-item"
+                            style={{
+                              animationDelay: `${idx * 0.04}s`,
+                              borderLeftColor: `rgba(${meta.rgb}, 0.25)`,
+                            }}
+                          >
+                            {/* Dot */}
+                            <div style={{
+                              width: 7, height: 7, borderRadius: '50%',
+                              background: meta.color, opacity: 0.6, flexShrink: 0,
+                            }} />
+
+                            {/* Name */}
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{ex.name}</div>
+                              <div className="text-xs text-muted" style={{ marginTop: 1 }}>
+                                {ex.defaultUnit}
+                                {maxW !== null && maxW > 0 && (
+                                  <> · terakhir: <span style={{ color: 'var(--accent)', fontWeight: 700 }}>
+                                    {ex.defaultUnit === 'BW' || ex.defaultUnit === 'SEC' ? `${maxW} reps` : `${maxW} ${ex.defaultUnit}`}
+                                  </span></>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {expandedExercises.length === 0 && (
+                    <div style={{ padding: '14px 24px', marginLeft: 20, borderLeft: '2px solid var(--border)' }}>
+                      <p className="text-xs text-muted">
+                        Belum ada gerakan — tambahkan via tombol "+ Gerakan" di atas
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Session history for this category */}
+                  {expandedSessions.length > 0 && (
+                    <div style={{ marginTop: 6 }}>
+                      <div className="text-xs text-muted" style={{
+                        fontWeight: 700, textTransform: 'uppercase',
+                        letterSpacing: '0.05em', padding: '6px 0 6px 4px',
+                        color: meta.color, opacity: 0.7,
+                      }}>
+                        Riwayat Sesi
+                      </div>
+                      {expandedSessions.map(session => (
+                        <SessionCard
+                          key={session.id}
+                          session={session}
+                          library={library}
+                          workouts={workouts}
+                          onUpdateProgress={setUpdateSession}
+                          onDelete={deleteSession}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )
         })}
       </div>
-
-      {/* Session list */}
-      {displayed.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">
-            {filterCat === 'Semua' ? '📭' : CAT_META[filterCat]?.emoji || '🏋️'}
-          </div>
-          <h3>{filterCat === 'Semua' ? 'Belum ada sesi latihan' : `Belum ada sesi ${filterCat}`}</h3>
-          <p className="text-sm">
-            Catat latihan dari Beranda dengan tombol "Catat Latihan Hari Ini"
-          </p>
-        </div>
-      ) : (
-        displayed.map(session => (
-          <SessionCard
-            key={session.id}
-            session={session}
-            library={library}
-            workouts={workouts}
-            onUpdateProgress={setUpdateSession}
-            onDelete={deleteSession}
-          />
-        ))
-      )}
 
       {/* Modals */}
       {showAddExercise && (

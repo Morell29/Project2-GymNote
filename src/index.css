@@ -905,3 +905,245 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 .fw-black { font-weight: 900; }
 .text-center { text-align: center; }
 .w-full { width: 100%; }
+
+/* ================================================
+   ANIMATIONS & TRANSITIONS
+   ================================================ */
+
+/* Fade-in up — default page element entrance */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; transform: translateY(-8px); }
+  to   { opacity: 1; max-height: 600px; transform: translateY(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 184, 150, 0.3); }
+  50%      { box-shadow: 0 0 18px 3px rgba(212, 184, 150, 0.12); }
+}
+
+/* Apply to page children */
+.page > * {
+  animation: fadeInUp 0.45s ease both;
+}
+.page > *:nth-child(1)  { animation-delay: 0s; }
+.page > *:nth-child(2)  { animation-delay: 0.04s; }
+.page > *:nth-child(3)  { animation-delay: 0.08s; }
+.page > *:nth-child(4)  { animation-delay: 0.12s; }
+.page > *:nth-child(5)  { animation-delay: 0.16s; }
+.page > *:nth-child(6)  { animation-delay: 0.20s; }
+.page > *:nth-child(7)  { animation-delay: 0.24s; }
+.page > *:nth-child(8)  { animation-delay: 0.28s; }
+.page > *:nth-child(9)  { animation-delay: 0.32s; }
+.page > *:nth-child(10) { animation-delay: 0.36s; }
+.page > *:nth-child(n+11) { animation-delay: 0.40s; }
+
+/* Animate overload rows */
+.overload-row {
+  animation: fadeInUp 0.35s ease both;
+}
+
+/* Smooth modal entrance */
+.modal-overlay {
+  animation: fadeIn 0.2s ease both;
+}
+.modal-sheet {
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Button hover micro-animation */
+.btn {
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+.btn:active {
+  transform: scale(0.96);
+}
+.btn-primary {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+.btn-primary:active {
+  transform: scale(0.96);
+  animation: none;
+}
+
+/* Smooth card interactions */
+.card, .greeting-card, .overload-row, .history-item {
+  transition: transform 0.18s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.2s ease;
+}
+.overload-row:active, .history-item:active {
+  transform: scale(0.985);
+}
+
+/* Smooth category tab transitions */
+.cat-tab {
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.cat-tab:active {
+  transform: scale(0.94);
+}
+
+/* Calendar day hover */
+.cal-day {
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+/* Badge micro-animation */
+.badge {
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+/* Slide-down content reveal */
+.slide-down-enter {
+  animation: slideDown 0.35s ease both;
+  overflow: hidden;
+}
+
+/* ================================================
+   FLOATING BACKGROUND PARTICLES
+   ================================================ */
+@keyframes floatDrift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(12px, -18px) rotate(90deg); }
+  50%  { transform: translate(-8px, -30px) rotate(180deg); }
+  75%  { transform: translate(14px, -12px) rotate(270deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+.floating-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  background: var(--accent);
+  animation: floatDrift linear infinite;
+}
+.particle-circle {
+  border-radius: 50%;
+}
+.particle-diamond {
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+/* Ensure content above particles */
+.app-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+/* ================================================
+   GYMNOTE BRAND HEADER
+   ================================================ */
+.brand-header {
+  text-align: center;
+  padding: 6px 0 10px;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  opacity: 0.5;
+  animation: fadeIn 0.6s ease 0.1s both;
+}
+
+/* ================================================
+   VERTICAL CATEGORY LIST (Latihan page)
+   ================================================ */
+.cat-list-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cat-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 100%;
+}
+.cat-list-item:active {
+  transform: scale(0.985);
+}
+.cat-list-item .cat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.cat-list-item .cat-info {
+  flex: 1;
+  min-width: 0;
+}
+.cat-list-item .cat-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+.cat-list-item .cat-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 2px;
+  transition: color 0.2s ease;
+}
+.cat-list-item .cat-arrow {
+  color: var(--text-muted);
+  transition: transform 0.25s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+/* Exercise list under selected category */
+.exercise-list-enter {
+  animation: slideDown 0.35s ease both;
+  overflow: hidden;
+}
+
+.exercise-row-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px 11px 24px;
+  margin-left: 20px;
+  border-left: 2px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  animation: fadeInUp 0.3s ease both;
+}
+.exercise-row-item:hover,
+.exercise-row-item:active {
+  background: var(--bg-card-2);
+}
+.exercise-row-item:last-child {
+  border-bottom-left-radius: var(--radius-sm);
+}
+
