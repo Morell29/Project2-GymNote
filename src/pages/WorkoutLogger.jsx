@@ -306,8 +306,12 @@ export default function WorkoutLogger() {
   const [expandedCat, setExpandedCat]         = useState(null) // kategori yang sedang terbuka
 
   const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))
-  const deleteSession = (id) => setWorkouts(prev => prev.filter(w => w.id !== id))
-  const handleAddEx   = (ex) => setLibrary(prev => [...prev, ex])
+  const deleteSession  = (id) => setWorkouts(prev => prev.filter(w => w.id !== id))
+  const handleAddEx    = (ex) => setLibrary(prev => [...prev, ex])
+  const deleteExercise = (exId) => {
+    if (!confirm('Hapus gerakan ini dari library?')) return
+    setLibrary(prev => prev.filter(ex => ex.id !== exId))
+  }
 
   // Hitung jumlah exercise per kategori
   const catCounts = {}
@@ -448,6 +452,21 @@ export default function WorkoutLogger() {
                                 )}
                               </div>
                             </div>
+
+                            {/* Delete exercise */}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); deleteExercise(ex.id) }}
+                              style={{
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                color: 'var(--text-muted)', padding: 6,
+                                display: 'flex', alignItems: 'center',
+                                borderRadius: 8, flexShrink: 0,
+                                transition: 'color 0.2s ease, background 0.2s ease',
+                              }}
+                              title="Hapus gerakan"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           </div>
                         )
                       })}

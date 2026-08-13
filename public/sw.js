@@ -2,7 +2,7 @@
 // Service Worker untuk GymNote PWA — network-first strategy
 // Selalu ambil versi terbaru, fallback ke cache jika offline
 
-const CACHE_NAME = 'gymnote-v3'
+const CACHE_NAME = 'gymnote-v4'
 
 // Install: langsung aktifkan
 self.addEventListener('install', (event) => {
