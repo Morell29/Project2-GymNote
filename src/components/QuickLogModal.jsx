@@ -1,6 +1,3 @@
-// src/components/QuickLogModal.jsx
-// Modal untuk mencatat latihan secara cepat — pilih kategori, tanggal otomatis
-
 import { useState } from 'react'
 import { X, Check } from 'lucide-react'
 import { useWorkouts } from '../hooks/useStorage'
@@ -38,10 +35,7 @@ export default function QuickLogModal({ onClose, onLogged }) {
       category: selectedCat,
     }
 
-    // Simpan ke workouts
     setWorkouts(prev => [session, ...prev])
-
-    // Kirim session ke Dashboard untuk lanjut ke UpdateProgress
     onLogged(session)
   }
 
@@ -53,11 +47,10 @@ export default function QuickLogModal({ onClose, onLogged }) {
       <div className="modal-sheet">
         <div className="modal-handle" />
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: 3 }}>Catat Latihan</h2>
-            <p className="text-xs" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+            <h2 style={{ fontSize: '18px', marginBottom: 3 }}>Catat Latihan</h2>
+            <p className="text-xs" style={{ color: 'var(--accent)', fontWeight: 500 }}>
               📅 {dateDisplay}
             </p>
           </div>
@@ -74,15 +67,14 @@ export default function QuickLogModal({ onClose, onLogged }) {
           className="text-sm"
           style={{
             color: 'var(--text-secondary)',
-            fontWeight: 600,
+            fontWeight: 500,
             marginBottom: 14,
           }}
         >
           Pilih jenis latihan hari ini:
         </p>
 
-        {/* Category options */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 22 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 }}>
           {CATS.map(cat => {
             const isSelected = selectedCat === cat.key
             return (
@@ -95,7 +87,7 @@ export default function QuickLogModal({ onClose, onLogged }) {
                   alignItems: 'center',
                   gap: 14,
                   padding: '13px 16px',
-                  borderRadius: 'var(--radius-md)',
+                  borderRadius: '6px',
                   border: `1.5px solid ${isSelected ? `var(${cat.colorVar})` : 'var(--border)'}`,
                   background: isSelected ? `var(${cat.bgVar})` : 'var(--bg-card-2)',
                   cursor: 'pointer',
@@ -109,8 +101,8 @@ export default function QuickLogModal({ onClose, onLogged }) {
                 </span>
                 <span
                   style={{
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                    fontSize: '15px',
                     flex: 1,
                     color: isSelected ? `var(${cat.colorVar})` : 'var(--text-primary)',
                     transition: 'var(--transition)',
@@ -128,7 +120,6 @@ export default function QuickLogModal({ onClose, onLogged }) {
           })}
         </div>
 
-        {/* Confirm */}
         <button
           className="btn btn-primary btn-full"
           id="btn-confirm-quicklog"

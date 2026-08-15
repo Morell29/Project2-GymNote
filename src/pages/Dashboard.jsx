@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, Plus, Pencil } from 'lucide-react'
@@ -31,13 +30,6 @@ const CAT_BG = {
   bw:     'var(--bw-bg)',
   others: 'var(--others-bg)',
 }
-const CAT_RGB = {
-  push:   '224,123,106',
-  pull:   '106,158,224',
-  leg:    '122,206,138',
-  bw:     '201,138,224',
-  others: '224,192,106',
-}
 
 function getLastWeight(workouts, exerciseId) {
   const sessions = workouts
@@ -64,27 +56,25 @@ function getLastWeight(workouts, exerciseId) {
 function TrendIcon({ trend }) {
   if (trend === 'up')   return <TrendingUp  size={13} className="trend-up" />
   if (trend === 'down') return <TrendingDown size={13} className="trend-down" />
-  if (trend === 'new')  return <span style={{ fontSize: '0.68rem', color: 'var(--accent)', fontWeight: 800 }}>NEW</span>
+  if (trend === 'new')  return <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 600 }}>NEW</span>
   return <Minus size={13} className="trend-same" />
 }
 
 function TrendLabel({ trend, weight, prevWeight, unit }) {
-  if (trend === 'new')  return <span className="trend-new" style={{ fontSize: '0.7rem', fontWeight: 700 }}>Pertama!</span>
+  if (trend === 'new')  return <span className="trend-new" style={{ fontSize: '12px', fontWeight: 500 }}>Pertama!</span>
   if (!prevWeight)      return null
   const diff = weight - prevWeight
-  if (trend === 'up')   return <span className="trend-up"   style={{ fontSize: '0.7rem', fontWeight: 700 }}>+{diff} {unit}</span>
-  if (trend === 'down') return <span className="trend-down" style={{ fontSize: '0.7rem', fontWeight: 700 }}>{diff} {unit}</span>
-  return <span className="trend-same" style={{ fontSize: '0.7rem', fontWeight: 700 }}>Sama</span>
+  if (trend === 'up')   return <span className="trend-up"   style={{ fontSize: '12px', fontWeight: 500 }}>+{diff} {unit}</span>
+  if (trend === 'down') return <span className="trend-down" style={{ fontSize: '12px', fontWeight: 500 }}>{diff} {unit}</span>
+  return <span className="trend-same" style={{ fontSize: '12px', fontWeight: 500 }}>Sama</span>
 }
 
-// ── Komponen kartu catatan harian ─────────────────────────────────────────────
 function TodaySessionCard({ session, library, onUpdateProgress }) {
   const category = session.category || session.name
   const cat = CATEGORIES.find(c => c.key === category)
   const meta = cat || { emoji: '🏋️', colorClass: 'others' }
   const color = CAT_COLORS[meta.colorClass] || 'var(--accent)'
   const bg    = CAT_BG[meta.colorClass]    || 'var(--accent-glow-sm)'
-  const rgb   = CAT_RGB[meta.colorClass]   || '212,184,150'
 
   const exerciseCount = session.exercises?.length || 0
   const hasProgress = exerciseCount > 0
@@ -93,16 +83,16 @@ function TodaySessionCard({ session, library, onUpdateProgress }) {
     <div
       style={{
         background: bg,
-        border: `1.5px solid rgba(${rgb}, 0.35)`,
-        borderRadius: 'var(--radius-md)',
-        padding: '13px 14px',
-        marginBottom: 9,
+        border: `1px solid var(--border)`,
+        borderRadius: '6px',
+        padding: '14px 16px',
+        marginBottom: 8,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ fontSize: '1.2rem' }}>{meta.emoji}</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 800, fontSize: '0.92rem', color: color }}>
+          <div style={{ fontWeight: 500, fontSize: '14px', color: color }}>
             {category}
           </div>
           <div className="text-xs text-muted" style={{ marginTop: 1 }}>
@@ -118,10 +108,10 @@ function TodaySessionCard({ session, library, onUpdateProgress }) {
           style={{
             background: color,
             color: 'var(--text-on-accent)',
-            fontWeight: 700,
-            fontSize: '0.75rem',
+            fontWeight: 500,
+            fontSize: '12px',
             padding: '7px 12px',
-            borderRadius: 'var(--radius-sm)',
+            borderRadius: '6px',
             display: 'flex',
             alignItems: 'center',
             gap: 5,
@@ -132,7 +122,6 @@ function TodaySessionCard({ session, library, onUpdateProgress }) {
         </button>
       </div>
 
-      {/* Preview exercises */}
       {hasProgress && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 9 }}>
           {session.exercises.slice(0, 4).map(ex => {
@@ -142,13 +131,13 @@ function TodaySessionCard({ session, library, onUpdateProgress }) {
               <span
                 key={ex.exerciseId}
                 style={{
-                  background: `rgba(${rgb}, 0.15)`,
-                  border: `1px solid rgba(${rgb}, 0.25)`,
-                  borderRadius: 100,
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  color: color,
-                  padding: '2px 9px',
+                  background: 'var(--bg-card-2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: 'var(--text-secondary)',
+                  padding: '2px 8px',
                 }}
               >
                 {def?.name || ex.exerciseId}
@@ -159,13 +148,13 @@ function TodaySessionCard({ session, library, onUpdateProgress }) {
           {session.exercises.length > 4 && (
             <span
               style={{
-                background: `rgba(${rgb}, 0.1)`,
-                border: `1px solid rgba(${rgb}, 0.2)`,
-                borderRadius: 100,
-                fontSize: '0.7rem',
-                fontWeight: 700,
+                background: 'var(--bg-card-2)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 500,
                 color: 'var(--text-muted)',
-                padding: '2px 9px',
+                padding: '2px 8px',
               }}
             >
               +{session.exercises.length - 4} lagi
@@ -177,7 +166,6 @@ function TodaySessionCard({ session, library, onUpdateProgress }) {
   )
 }
 
-// ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate()
   const { workouts } = useWorkouts()
@@ -188,12 +176,11 @@ export default function Dashboard() {
   const [showExport, setShowExport]         = useState(false)
   const [showQuickLog, setShowQuickLog]     = useState(false)
   const [updateSession, setUpdateSession]   = useState(null)
-  const [editExercise, setEditExercise]     = useState(null) // exercise yang sedang di-edit dari beranda
+  const [editExercise, setEditExercise]     = useState(null)
 
   const streak       = calculateStreak(workouts)
   const totalSessions = workouts.length
 
-  // Ambil sesi hari ini
   const todayKey = (() => {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
@@ -205,7 +192,6 @@ export default function Dashboard() {
     return key === todayKey
   })
 
-  // Calendar — last 14 days
   const workoutDays = getWorkoutDays(workouts)
   const calDays = Array.from({ length: 14 }, (_, i) => {
     const d = new Date()
@@ -220,14 +206,12 @@ export default function Dashboard() {
     }
   })
 
-  // Last session (hari lain)
   const lastSession = workouts.find(w => {
     const d = new Date(w.date)
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
     return key !== todayKey
   })
 
-  // PR count
   const lastAnySession = workouts.length
     ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
     : null
@@ -243,7 +227,6 @@ export default function Dashboard() {
 
   const activeCat = CATEGORIES.find(c => c.key === activeTab)
 
-  // Handler: setelah QuickLog selesai → otomatis buka UpdateProgress
   const handleLogged = (session) => {
     setShowQuickLog(false)
     setUpdateSession(session)
@@ -254,65 +237,59 @@ export default function Dashboard() {
   return (
     <div className="page">
 
-      {/* ── GYMNOTE Brand ── */}
       <div className="brand-header">G Y M N O T E</div>
 
-      {/* ── Greeting Card ── */}
       <div className="greeting-card">
-        <p className="text-muted text-xs" style={{ marginBottom: 4, color: 'var(--text-secondary)' }}>
+        <p style={{ marginBottom: 4, color: 'var(--text-on-dark-secondary)', fontSize: '12px' }}>
           Selamat datang kembali,
         </p>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h1 style={{ fontSize: '1.55rem' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 300, color: 'var(--text-on-dark)', letterSpacing: '-0.104px' }}>
             {settings.username} <span style={{ color: 'var(--accent)' }}>💪</span>
           </h1>
-          {/* Export icon — sudut kanan atas */}
           <button
-            className="btn btn-ghost btn-icon btn-sm"
+            className="btn btn-sm btn-icon"
             id="btn-export"
             onClick={() => setShowExport(true)}
-            style={{ border: '1px solid var(--border-accent)', color: 'var(--accent)' }}
+            style={{ border: '1.5px solid rgba(255,255,255,0.2)', color: 'var(--text-on-dark)', background: 'transparent', borderRadius: '6px' }}
             title="Export Progress"
           >
             <Download size={17} />
           </button>
         </div>
 
-        {/* Stats */}
-        <div style={{ display: 'flex', gap: 22 }}>
+        <div style={{ display: 'flex', gap: 28 }}>
           <div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{streak}</div>
-            <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>🔥 Streak</div>
+            <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{streak}</div>
+            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4 }}>🔥 Streak</div>
           </div>
           <div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{totalSessions}</div>
-            <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>📅 Sesi</div>
+            <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{totalSessions}</div>
+            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4 }}>📅 Sesi</div>
           </div>
           {prCount > 0 && (
             <div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{prCount}</div>
-              <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: 2 }}>🏆 PR Baru</div>
+              <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{prCount}</div>
+              <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4 }}>🏆 PR Baru</div>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Tombol Catat Latihan ── */}
       <button
         className="btn btn-primary btn-full mb-4"
         id="btn-catat-latihan"
         onClick={() => setShowQuickLog(true)}
-        style={{ borderRadius: 'var(--radius-lg)', fontSize: '1rem', padding: '14px 20px' }}
+        style={{ fontSize: '16px', padding: '16px 24px' }}
       >
         <Plus size={19} />
         Catat Latihan Hari Ini
       </button>
 
-      {/* ── Catatan Hari Ini ── */}
       {todaySessions.length > 0 && (
         <div className="mb-4">
           <div className="section-header" style={{ marginBottom: 10 }}>
-            <h2 style={{ fontSize: '0.9rem' }}>🗓 Hari Ini</h2>
+            <h2 style={{ fontSize: '16px' }}>🗓 Hari Ini</h2>
             <span className="badge badge-green">{todaySessions.length} sesi</span>
           </div>
           {todaySessions.map(s => (
@@ -326,10 +303,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Calendar Strip ── */}
       <div className="card mb-4">
         <div className="section-header">
-          <h2 style={{ fontSize: '0.9rem' }}>📅 Aktivitas 2 Minggu</h2>
+          <h2 style={{ fontSize: '16px' }}>📅 Aktivitas 2 Minggu</h2>
           {streak > 0 && (
             <span className="badge badge-yellow">{streak} hari streak</span>
           )}
@@ -350,9 +326,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Progressive Overload Hub ── */}
       <div className="section-header" style={{ marginBottom: 10 }}>
-        <h2 style={{ fontSize: '1rem' }}>📈 Progressive Overload</h2>
+        <h2 style={{ fontSize: '16px' }}>📈 Progressive Overload</h2>
         {workouts.length > 0 && (
           <span
             className="text-xs text-muted"
@@ -364,7 +339,6 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Category Tabs */}
       <div className="category-tabs">
         {CATEGORIES.map(cat => (
           <button
@@ -379,20 +353,18 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Exercise rows for active category */}
       <div
         style={{
-          background: CAT_BG[activeCat.colorClass],
-          borderRadius: 'var(--radius-lg)',
-          padding: '12px',
-          border: `1px solid rgba(${CAT_RGB[activeCat.colorClass]}, 0.2)`,
+          background: 'var(--bg-card)',
+          borderRadius: '24px',
+          padding: '16px',
+          border: '1px solid var(--border)',
           marginBottom: 16,
         }}
       >
-        {/* Category header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <span style={{ fontSize: '1.1rem' }}>{activeCat.emoji}</span>
-          <span style={{ fontWeight: 800, fontSize: '0.9rem', color: CAT_COLORS[activeCat.colorClass] }}>
+          <span style={{ fontWeight: 500, fontSize: '14px', color: CAT_COLORS[activeCat.colorClass] }}>
             {activeCat.label}
           </span>
           <span className="text-xs text-muted" style={{ marginLeft: 'auto' }}>
@@ -402,7 +374,7 @@ export default function Dashboard() {
 
         {catExercises.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 16px' }}>
-            <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.3 }}>🏋️</div>
+            <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.2 }}>🏋️</div>
             <p className="text-xs text-muted">Belum ada latihan di kategori ini</p>
           </div>
         ) : (
@@ -427,7 +399,6 @@ export default function Dashboard() {
                     <div className="text-xs text-muted" style={{ marginTop: 2 }}>Tap untuk mulai catat</div>
                   )}
                 </div>
-                {/* Weight + edit button */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                   <div className="overload-row-meta">
                     {weight !== null ? (
@@ -438,17 +409,17 @@ export default function Dashboard() {
                         <div className="text-xs text-muted">terakhir</div>
                       </>
                     ) : (
-                      <div className="text-xs" style={{ color: 'var(--accent)', fontWeight: 700 }}>+ Catat</div>
+                      <div className="text-xs" style={{ color: 'var(--accent)', fontWeight: 500 }}>+ Catat</div>
                     )}
                   </div>
                   <div
                     style={{
                       width: 30, height: 30,
-                      borderRadius: 8,
-                      background: CAT_BG[activeCat.colorClass],
-                      border: `1px solid rgba(${CAT_RGB[activeCat.colorClass]}, 0.3)`,
+                      borderRadius: 6,
+                      background: 'var(--bg-card-2)',
+                      border: '1px solid var(--border)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: CAT_COLORS[activeCat.colorClass],
+                      color: 'var(--text-muted)',
                       flexShrink: 0,
                     }}
                   >
@@ -461,11 +432,10 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ── Sesi Terakhir (selain hari ini) ── */}
       {lastSession && todaySessions.length === 0 && (
         <div className="card" style={{ cursor: 'pointer' }} onClick={() => navigate('/workout')}>
           <div className="section-header">
-            <h2 style={{ fontSize: '0.9rem' }}>📋 Sesi Terakhir</h2>
+            <h2 style={{ fontSize: '14px' }}>📋 Sesi Terakhir</h2>
             <ChevronRight size={16} color="var(--text-muted)" />
           </div>
           <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 10 }}>
@@ -484,7 +454,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Modals ── */}
       {showExport && (
         <ExportButton
           workouts={workouts}

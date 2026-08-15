@@ -1,6 +1,3 @@
-// src/components/QuickEditModal.jsx
-// Edit berat & reps langsung dari beranda tanpa perlu log sesi
-
 import { useState } from 'react'
 import { X, Plus, Trash2, Check } from 'lucide-react'
 import { useWorkouts } from '../hooks/useStorage'
@@ -12,7 +9,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
   const isBW  = unit === 'BW'
   const isSEC = unit === 'SEC'
 
-  // Pre-fill dari sesi terakhir supaya user tinggal ubah angkanya
   const lastSession = [...workouts]
     .filter(w => w.exercises?.some(e => e.exerciseId === exercise.id))
     .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
@@ -37,11 +33,9 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
     setSets(p => p.map(s => s.id === id ? { ...s, [field]: val } : s))
 
   const handleSave = () => {
-    // Filter set yang ada isian
     const validSets = sets.filter(s => s.weight !== '' || s.reps !== '')
     if (!validSets.length) { onClose(); return }
 
-    // Buat entry session baru (hari ini) dengan exercise ini
     const today = new Date()
     const session = {
       id: generateId(),
@@ -60,7 +54,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
     onClose()
   }
 
-  // Hitung current max dari input user (untuk realtime feedback)
   const currentMax = Math.max(...sets.map(s => parseFloat(s.weight) || 0))
   const isNewPR    = lastMax !== null && currentMax > lastMax
 
@@ -69,10 +62,9 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
       <div className="modal-sheet">
         <div className="modal-handle" />
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: 3 }}>{exercise.name}</h2>
+            <h2 style={{ fontSize: '18px', marginBottom: 3 }}>{exercise.name}</h2>
             <p className="text-xs text-muted">{exercise.category} · {unit}</p>
           </div>
           <button className="btn btn-ghost btn-icon btn-sm" id="btn-close-quickedit" onClick={onClose}>
@@ -80,7 +72,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
           </button>
         </div>
 
-        {/* Reference: last recorded */}
         {lastMax !== null && lastMax > 0 && (
           <div
             style={{
@@ -89,25 +80,25 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
               gap: 8,
               padding: '8px 12px',
               background: 'var(--bg-card-2)',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: '6px',
               margin: '12px 0',
               border: '1px solid var(--border)',
             }}
           >
             <span className="text-xs text-muted">📊 Catatan terakhir:</span>
-            <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--accent)' }}>
+            <span style={{ fontWeight: 500, fontSize: '14px', color: 'var(--text-primary)' }}>
               {isBW || isSEC ? `${lastEntry?.sets?.length || 0} set` : `${lastMax} ${unit}`}
             </span>
             {isNewPR && (
               <span
                 style={{
                   marginLeft: 'auto',
-                  background: 'rgba(122,206,138,0.15)',
-                  border: '1px solid rgba(122,206,138,0.3)',
-                  color: '#7ace8a',
-                  borderRadius: 100,
-                  fontSize: '0.68rem',
-                  fontWeight: 800,
+                  background: 'rgba(45,157,74,0.08)',
+                  border: '1px solid rgba(45,157,74,0.2)',
+                  color: '#2d9d4a',
+                  borderRadius: 6,
+                  fontSize: '11px',
+                  fontWeight: 600,
                   padding: '2px 8px',
                 }}
               >
@@ -117,18 +108,17 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
           </div>
         )}
 
-        {/* Column headers */}
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: isBW || isSEC ? '26px 1fr 28px' : '26px 1fr 1fr 28px',
             gap: 8,
             padding: '8px 0 6px',
-            fontSize: '0.65rem',
-            fontWeight: 700,
+            fontSize: '11px',
+            fontWeight: 500,
             color: 'var(--text-muted)',
             textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+            letterSpacing: '0.3px',
             textAlign: 'center',
           }}
         >
@@ -140,7 +130,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
           <span />
         </div>
 
-        {/* Set rows */}
         <div style={{ marginBottom: 10 }}>
           {sets.map((set, idx) => (
             <div
@@ -156,15 +145,14 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
               <span
                 style={{
                   textAlign: 'center',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
+                  fontSize: '13px',
+                  fontWeight: 500,
                   color: 'var(--accent)',
                 }}
               >
                 {idx + 1}
               </span>
 
-              {/* Weight / reps / seconds input */}
               <input
                 className="set-input"
                 type="number"
@@ -175,7 +163,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
                 autoFocus={idx === 0}
               />
 
-              {/* Reps (hanya untuk KG/BAR) */}
               {!isBW && !isSEC && (
                 <input
                   className="set-input"
@@ -187,7 +174,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
                 />
               )}
 
-              {/* Delete set */}
               <button
                 onClick={() => removeSet(set.id)}
                 style={{
@@ -204,7 +190,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
           ))}
         </div>
 
-        {/* Add set */}
         <button
           className="btn btn-ghost btn-sm btn-full"
           onClick={addSet}
@@ -213,7 +198,6 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
           <Plus size={13} /> Tambah Set
         </button>
 
-        {/* Save */}
         <button
           className="btn btn-primary btn-full"
           id="btn-save-quickedit"

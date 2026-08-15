@@ -1,7 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import NavBar from './components/NavBar'
-import FloatingParticles from './components/FloatingParticles'
 import Dashboard from './pages/Dashboard'
 import WorkoutLogger from './pages/WorkoutLogger'
 import Settings from './pages/Settings'
@@ -9,7 +8,6 @@ import Settings from './pages/Settings'
 export default function App() {
   return (
     <BrowserRouter>
-      <FloatingParticles />
       <div className="app-wrapper">
         <Routes>
           <Route path="/"        element={<Dashboard />} />

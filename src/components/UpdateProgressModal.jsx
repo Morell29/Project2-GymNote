@@ -1,6 +1,3 @@
-// src/components/UpdateProgressModal.jsx
-// Modal untuk input berat & reps setelah mencatat jenis latihan
-
 import { useState } from 'react'
 import { X, Plus, Trash2, Check, ChevronDown, ChevronUp, SkipForward } from 'lucide-react'
 import { useWorkouts } from '../hooks/useStorage'
@@ -20,12 +17,9 @@ export default function UpdateProgressModal({ session, library, onClose }) {
   const category = session.category || session.name
   const meta = CAT_META[category] || { emoji: '🏋️', color: 'var(--accent)', bg: 'var(--accent-glow-sm)' }
 
-  // Exercises dalam kategori ini
   const catExercises = library.filter(ex => ex.category === category)
 
-  // State: exerciseId → { unit, sets[], expanded }
   const [entries, setEntries] = useState(() => {
-    // Pre-populate dari session jika sudah ada exercises
     const map = {}
     if (session.exercises?.length) {
       session.exercises.forEach(e => {
@@ -42,12 +36,10 @@ export default function UpdateProgressModal({ session, library, onClose }) {
   const toggleExercise = (ex) => {
     setEntries(prev => {
       if (prev[ex.id]) {
-        // Unselect — hapus
         const next = { ...prev }
         delete next[ex.id]
         return next
       }
-      // Select — tambah dengan 1 set kosong
       return {
         ...prev,
         [ex.id]: {
@@ -80,7 +72,6 @@ export default function UpdateProgressModal({ session, library, onClose }) {
     setEntries(prev => {
       const newSets = prev[exId].sets.filter(s => s.id !== setId)
       if (newSets.length === 0) {
-        // Jika set habis, unselect exercise
         const next = { ...prev }
         delete next[exId]
         return next
@@ -133,12 +124,11 @@ export default function UpdateProgressModal({ session, library, onClose }) {
       <div className="modal-sheet" style={{ maxHeight: '90dvh' }}>
         <div className="modal-handle" />
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
               <span style={{ fontSize: '1.1rem' }}>{meta.emoji}</span>
-              <h2 style={{ fontSize: '1.05rem' }}>Update Progress</h2>
+              <h2 style={{ fontSize: '16px' }}>Update Progress</h2>
             </div>
             <p className="text-xs text-muted">{category} · {dateStr}</p>
           </div>
@@ -151,26 +141,24 @@ export default function UpdateProgressModal({ session, library, onClose }) {
           </button>
         </div>
 
-        {/* Instruction */}
         <div
           style={{
             padding: '10px 12px',
             background: meta.bg,
-            borderRadius: 'var(--radius-sm)',
-            border: `1px solid ${meta.color}30`,
+            borderRadius: '6px',
+            border: '1px solid var(--border)',
             marginBottom: 14,
           }}
         >
-          <p className="text-xs" style={{ color: meta.color, fontWeight: 600 }}>
+          <p className="text-xs" style={{ color: meta.color, fontWeight: 500 }}>
             Centang gerakan yang kamu lakukan, lalu isi berat & repetisi setiap set.
           </p>
         </div>
 
-        {/* Exercise list */}
         <div style={{ overflowY: 'auto', maxHeight: '52dvh', paddingRight: 2, marginBottom: 14 }}>
           {catExercises.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.4 }}>🏋️</div>
+              <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.3 }}>🏋️</div>
               <p className="text-sm">Belum ada exercise di kategori ini</p>
             </div>
           ) : (
@@ -183,14 +171,13 @@ export default function UpdateProgressModal({ session, library, onClose }) {
                   key={ex.id}
                   style={{
                     marginBottom: 8,
-                    borderRadius: 'var(--radius-md)',
-                    border: `1.5px solid ${isSelected ? meta.color + '60' : 'var(--border)'}`,
+                    borderRadius: '6px',
+                    border: `1.5px solid ${isSelected ? 'var(--border-hover)' : 'var(--border)'}`,
                     overflow: 'hidden',
                     background: isSelected ? meta.bg : 'var(--bg-card-2)',
                     transition: 'border-color 0.2s, background 0.2s',
                   }}
                 >
-                  {/* Row: checkbox + name + expand toggle */}
                   <div
                     style={{
                       display: 'flex',
@@ -199,7 +186,6 @@ export default function UpdateProgressModal({ session, library, onClose }) {
                       gap: 10,
                     }}
                   >
-                    {/* Checkbox */}
                     <div
                       onClick={() => toggleExercise(ex)}
                       style={{
@@ -221,12 +207,11 @@ export default function UpdateProgressModal({ session, library, onClose }) {
                       )}
                     </div>
 
-                    {/* Name */}
                     <span
                       onClick={() => toggleExercise(ex)}
                       style={{
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
+                        fontWeight: 500,
+                        fontSize: '14px',
                         flex: 1,
                         cursor: 'pointer',
                         color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
@@ -236,10 +221,9 @@ export default function UpdateProgressModal({ session, library, onClose }) {
                       {ex.name}
                     </span>
 
-                    {/* Unit badge + expand arrow */}
                     <span
                       className="text-xs text-muted"
-                      style={{ fontWeight: 600, marginRight: 6 }}
+                      style={{ fontWeight: 500, marginRight: 6 }}
                     >
                       {ex.defaultUnit}
                     </span>
@@ -264,21 +248,19 @@ export default function UpdateProgressModal({ session, library, onClose }) {
                     )}
                   </div>
 
-                  {/* Set inputs (when selected & expanded) */}
                   {isSelected && entry.expanded && (
                     <div style={{ padding: '0 14px 12px' }}>
-                      {/* Column headers */}
                       <div
                         style={{
                           display: 'grid',
                           gridTemplateColumns: '22px 1fr 1fr 30px',
                           gap: 6,
                           padding: '2px 0 7px',
-                          fontSize: '0.66rem',
-                          fontWeight: 700,
+                          fontSize: '11px',
+                          fontWeight: 500,
                           color: 'var(--text-muted)',
                           textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
+                          letterSpacing: '0.3px',
                           textAlign: 'center',
                         }}
                       >
@@ -304,8 +286,8 @@ export default function UpdateProgressModal({ session, library, onClose }) {
                           <span
                             style={{
                               textAlign: 'center',
-                              fontSize: '0.78rem',
-                              fontWeight: 800,
+                              fontSize: '13px',
+                              fontWeight: 500,
                               color: meta.color,
                             }}
                           >
@@ -352,7 +334,7 @@ export default function UpdateProgressModal({ session, library, onClose }) {
                           width: '100%',
                           marginTop: 4,
                           borderStyle: 'dashed',
-                          fontSize: '0.78rem',
+                          fontSize: '13px',
                         }}
                       >
                         <Plus size={13} /> Tambah Set
@@ -365,7 +347,6 @@ export default function UpdateProgressModal({ session, library, onClose }) {
           )}
         </div>
 
-        {/* Save button */}
         <button
           className="btn btn-primary btn-full"
           id="btn-save-progress"
@@ -377,20 +358,18 @@ export default function UpdateProgressModal({ session, library, onClose }) {
           Simpan {selectedCount > 0 ? `${selectedCount} Gerakan` : 'Progress'}
         </button>
 
-        {/* Lewati — simpan sesi tanpa detail */}
         <button
           className="btn btn-ghost btn-full"
           id="btn-skip-progress"
           onClick={() => {
-            // Simpan sesi apa adanya (meski tanpa exercises)
             setWorkouts(prev => {
               const exists = prev.some(w => w.id === session.id)
-              if (exists) return prev // sudah ada, tidak perlu ubah
+              if (exists) return prev
               return [{ ...session, exercises: [] }, ...prev]
             })
             onClose()
           }}
-          style={{ marginTop: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}
+          style={{ marginTop: 8, fontSize: '14px', color: 'var(--text-muted)' }}
         >
           <SkipForward size={15} />
           Lewati — Simpan Tanpa Detail

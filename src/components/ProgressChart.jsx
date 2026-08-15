@@ -1,6 +1,5 @@
-// src/components/ProgressChart.jsx
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -8,14 +7,14 @@ const CustomTooltip = ({ active, payload, label }) => {
     return (
       <div style={{
         background: 'var(--bg-card)',
-        border: '1px solid var(--border-accent)',
-        borderRadius: 10,
+        border: '1px solid var(--border)',
+        borderRadius: 6,
         padding: '8px 12px',
-        fontSize: '0.82rem',
+        fontSize: '13px',
       }}>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 4 }}>{label}</p>
         {payload.map((p, i) => (
-          <p key={i} style={{ color: p.color, fontWeight: 700 }}>
+          <p key={i} style={{ color: p.color, fontWeight: 500 }}>
             {p.name}: {p.value} {p.payload.unit}
           </p>
         ))}
@@ -29,7 +28,7 @@ export default function ProgressChart({ data, dataKey = 'maxWeight', color = 'va
   if (!data || data.length < 2) {
     return (
       <div className="empty-state" style={{ padding: '24px' }}>
-        <span style={{ fontSize: '1.5rem', opacity: 0.3 }}>📊</span>
+        <span style={{ fontSize: '1.5rem', opacity: 0.2 }}>📊</span>
         <p className="text-xs text-muted text-center">Butuh minimal 2 sesi untuk menampilkan grafik</p>
       </div>
     )
@@ -38,15 +37,15 @@ export default function ProgressChart({ data, dataKey = 'maxWeight', color = 'va
   return (
     <ResponsiveContainer width="100%" height={180}>
       <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
         <XAxis
           dataKey="date"
-          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'Outfit' }}
+          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'Inter' }}
           tickLine={false}
           axisLine={false}
         />
         <YAxis
-          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'Outfit' }}
+          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'Inter' }}
           tickLine={false}
           axisLine={false}
           domain={['auto', 'auto']}

@@ -1,4 +1,3 @@
-// src/components/RestTimer.jsx
 import { useState, useEffect, useRef } from 'react'
 import { X, Play, Pause, RotateCcw } from 'lucide-react'
 
@@ -17,7 +16,6 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
           if (r <= 1) {
             clearInterval(intervalRef.current)
             setRunning(false)
-            // Vibrate on finish
             if ('vibrate' in navigator) navigator.vibrate([200, 100, 200])
             return 0
           }
@@ -55,33 +53,31 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
     <div className="rest-timer-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="rest-timer-card">
         <div className="flex items-center justify-between mb-4">
-          <h3 style={{ fontWeight: 800 }}>⏱ Rest Timer</h3>
+          <h3 style={{ fontWeight: 500 }}>⏱ Rest Timer</h3>
           <button className="btn btn-ghost btn-icon btn-sm" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
-        {/* Timer Circle */}
         <div className="timer-circle">
           <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" strokeWidth="5"/>
             <circle
               cx="60" cy="60" r="52"
               fill="none"
-              stroke={remaining === 0 ? '#ff3b30' : 'var(--accent)'}
+              stroke={remaining === 0 ? 'var(--accent)' : 'var(--accent)'}
               strokeWidth="5"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDash}
-              style={{ transition: 'stroke-dashoffset 1s linear', filter: 'drop-shadow(0 0 8px var(--accent))' }}
+              style={{ transition: 'stroke-dashoffset 1s linear' }}
             />
           </svg>
-          <div className="timer-value" style={{ color: remaining === 0 ? '#ff3b30' : 'var(--accent)' }}>
+          <div className="timer-value" style={{ color: remaining === 0 ? 'var(--accent)' : 'var(--accent)' }}>
             {remaining === 0 ? 'GO!' : formatTime(remaining)}
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex gap-2 justify-center mb-4">
           <button className="btn btn-ghost btn-sm" onClick={handleReset}>
             <RotateCcw size={15} /> Reset
@@ -94,7 +90,6 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
           </button>
         </div>
 
-        {/* Presets */}
         <div className="timer-presets">
           {PRESETS.map(s => (
             <button

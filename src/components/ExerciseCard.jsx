@@ -1,6 +1,5 @@
-// src/components/ExerciseCard.jsx
 import { useState } from 'react'
-import { Plus, Trash2, ChevronDown, ChevronUp, Timer, Copy, TrendingUp } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, ChevronUp, Timer, TrendingUp } from 'lucide-react'
 import { createBlankSet, compareWithLast, getLastSessionForExercise } from '../utils/workoutUtils'
 
 export default function ExerciseCard({
@@ -13,7 +12,6 @@ export default function ExerciseCard({
   onStartTimer,
 }) {
   const [expanded, setExpanded] = useState(true)
-  const [showChart, setShowChart] = useState(false)
 
   const lastData = getLastSessionForExercise(workouts, exerciseEntry.exerciseId, currentSessionId)
   const lastExercise = lastData?.exercise
@@ -31,7 +29,6 @@ export default function ExerciseCard({
       i === setIdx ? { ...s, done: !s.done } : s
     )
     onChange({ ...exerciseEntry, sets: newSets })
-    // Start rest timer on done
     if (!exerciseEntry.sets[setIdx].done) {
       onStartTimer()
     }
@@ -58,12 +55,11 @@ export default function ExerciseCard({
 
   return (
     <div className={`exercise-card ${doneCount === exerciseEntry.sets.length && doneCount > 0 ? 'card-accent' : ''}`}>
-      {/* Header */}
       <div className="exercise-header" onClick={() => setExpanded(e => !e)}>
         <div className="exercise-name">
           <span>{exerciseDef?.name || exerciseEntry.exerciseId}</span>
           {doneCount > 0 && (
-            <span className="badge badge-green" style={{ fontSize: '0.68rem' }}>
+            <span className="badge badge-green" style={{ fontSize: '11px' }}>
               {doneCount}/{exerciseEntry.sets.length}
             </span>
           )}
@@ -82,14 +78,12 @@ export default function ExerciseCard({
 
       {expanded && (
         <div className="exercise-body">
-          {/* Unit toggle */}
           <div className="flex items-center justify-between mb-3">
             <div className="unit-toggle" style={{ maxWidth: 120 }}>
               <button className={exerciseEntry.unit === 'KG' ? 'active' : ''} onClick={() => setUnit('KG')}>KG</button>
               <button className={exerciseEntry.unit === 'BAR' ? 'active' : ''} onClick={() => setUnit('BAR')}>BAR</button>
             </div>
 
-            {/* Comparison badge */}
             {comparison && (
               <div className={`overload-indicator ${
                 comparison.direction === 'up' ? 'overload-up' :
@@ -100,24 +94,23 @@ export default function ExerciseCard({
             )}
           </div>
 
-          {/* Previous session reference */}
           {lastExercise && (
             <div className="mb-3" style={{
               background: 'var(--bg-card-2)',
-              borderRadius: 8,
+              borderRadius: 6,
               padding: '8px 12px',
-              fontSize: '0.75rem',
+              fontSize: '12px',
               color: 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
+              border: '1px solid var(--border)',
             }}>
               <TrendingUp size={13} />
               Sesi terakhir: {lastExercise.sets.map(s => `${s.weight||'?'}${lastExercise.unit||'KG'} × ${s.reps||'?'}`).join(', ')}
             </div>
           )}
 
-          {/* Sets table header */}
           <div className="set-header-row">
             <span>Set</span>
             <span>{exerciseEntry.unit || 'KG'}</span>
@@ -126,7 +119,6 @@ export default function ExerciseCard({
             <span></span>
           </div>
 
-          {/* Sets */}
           {exerciseEntry.sets.map((set, idx) => (
             <div key={set.id} className="set-row">
               <button
@@ -175,7 +167,6 @@ export default function ExerciseCard({
             </div>
           ))}
 
-          {/* Action row */}
           <div className="flex gap-2 mt-3">
             <button className="btn btn-ghost btn-sm" onClick={addSet} style={{ flex: 1 }}>
               <Plus size={15} /> Tambah Set

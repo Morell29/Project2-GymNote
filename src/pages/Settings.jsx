@@ -1,6 +1,5 @@
-// src/pages/Settings.jsx
 import { useState } from 'react'
-import { Download, Upload, Trash2, User, Clock, ChevronRight } from 'lucide-react'
+import { Download, Upload, Trash2, User, Clock } from 'lucide-react'
 import { useSettings, useWorkouts, useExerciseLibrary, useTemplates } from '../hooks/useStorage'
 
 export default function Settings() {
@@ -64,16 +63,15 @@ export default function Settings() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Pengaturan <span style={{ color: 'var(--accent)' }}>⚙️</span></h1>
+        <h1 style={{ fontSize: '26px', fontWeight: 500 }}>Pengaturan <span style={{ color: 'var(--accent)' }}>⚙️</span></h1>
       </div>
 
-      {/* Profile */}
       <div className="card mb-4">
         <div className="flex items-center gap-3 mb-4">
           <div style={{
             width: 42, height: 42, borderRadius: '50%',
             background: 'var(--accent-glow-sm)',
-            border: '2px solid var(--border-accent)',
+            border: '1px solid var(--border-accent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <User size={20} color="var(--accent)" />
@@ -91,16 +89,15 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Rest Timer */}
       <div className="card mb-4">
         <div className="flex items-center gap-3 mb-4">
           <div style={{
             width: 42, height: 42, borderRadius: '50%',
-            background: 'rgba(10,132,255,0.12)',
-            border: '2px solid rgba(10,132,255,0.3)',
+            background: 'rgba(58, 123, 213, 0.08)',
+            border: '1px solid rgba(58, 123, 213, 0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Clock size={20} color="#0a84ff" />
+            <Clock size={20} color="#3a7bd5" />
           </div>
           <div>
             <h2>Rest Timer Default</h2>
@@ -120,7 +117,6 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Data Management */}
       <div className="card mb-4">
         <h2 className="mb-4">📦 Kelola Data</h2>
 
@@ -132,12 +128,12 @@ export default function Settings() {
           {importMsg && (
             <div style={{
               padding: '10px 14px',
-              borderRadius: 10,
-              background: importMsg.type === 'success' ? 'rgba(57,255,20,0.1)' : 'rgba(255,59,48,0.1)',
-              border: `1px solid ${importMsg.type === 'success' ? 'rgba(57,255,20,0.3)' : 'rgba(255,59,48,0.3)'}`,
-              color: importMsg.type === 'success' ? 'var(--accent)' : '#ff3b30',
-              fontSize: '0.85rem',
-              fontWeight: 600,
+              borderRadius: 6,
+              background: importMsg.type === 'success' ? 'rgba(45,157,74,0.06)' : 'rgba(223,28,47,0.06)',
+              border: `1px solid ${importMsg.type === 'success' ? 'rgba(45,157,74,0.2)' : 'rgba(223,28,47,0.2)'}`,
+              color: importMsg.type === 'success' ? '#2d9d4a' : 'var(--accent)',
+              fontSize: '14px',
+              fontWeight: 500,
             }}>
               {importMsg.text}
             </div>
@@ -154,23 +150,21 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Danger zone */}
-      <div className="card" style={{ border: '1px solid rgba(255,59,48,0.2)' }}>
-        <h2 className="mb-3" style={{ color: '#ff3b30' }}>⚠️ Danger Zone</h2>
+      <div className="card" style={{ border: '1px solid var(--border-accent)' }}>
+        <h2 className="mb-3" style={{ color: 'var(--accent)' }}>⚠️ Danger Zone</h2>
         <p className="text-sm text-muted mb-3">Hapus semua sesi latihan. Tindakan ini tidak bisa dibatalkan.</p>
         <button
           className={`btn btn-full ${confirmClear ? 'btn-danger' : 'btn-ghost'}`}
           onClick={handleClearData}
-          style={{ borderColor: 'rgba(255,59,48,0.3)' }}
+          style={{ borderColor: 'var(--border-accent)' }}
         >
           <Trash2 size={16} />
           {confirmClear ? '⚠️ Tekan lagi untuk konfirmasi' : 'Hapus Semua Sesi'}
         </button>
       </div>
 
-      {/* About */}
-      <div style={{ textAlign: 'center', padding: '32px 0 8px', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-        <p style={{ fontWeight: 800, color: 'var(--accent)', fontSize: '1rem', marginBottom: 4 }}>GymNote</p>
+      <div style={{ textAlign: 'center', padding: '32px 0 8px', color: 'var(--text-muted)', fontSize: '12px' }}>
+        <p style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '16px', marginBottom: 4 }}>GymNote</p>
         <p>v1.0.0 — Progressive Overload Tracker</p>
         <p style={{ marginTop: 4, opacity: 0.5 }}>Data tersimpan di browser lokal</p>
       </div>
