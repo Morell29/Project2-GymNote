@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, Upload, Trash2, User, Clock } from 'lucide-react'
+import { Download, Upload, Trash2, User, Clock, Sun, Moon } from 'lucide-react'
 import { useSettings, useWorkouts, useExerciseLibrary, useTemplates } from '../hooks/useStorage'
 
 export default function Settings() {
@@ -86,6 +86,33 @@ export default function Settings() {
             onChange={e => setSettings(s => ({ ...s, username: e.target.value }))}
             placeholder="Nama kamu..."
           />
+        </div>
+      </div>
+
+      <div className="card mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div style={{
+              width: 42, height: 42, borderRadius: '50%',
+              background: settings.darkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(217, 119, 6, 0.08)',
+              border: `1px solid ${settings.darkMode ? 'rgba(139, 92, 246, 0.2)' : 'rgba(217, 119, 6, 0.2)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {settings.darkMode ? <Moon size={20} color="#8b5cf6" /> : <Sun size={20} color="#d97706" />}
+            </div>
+            <div>
+              <h2>Tampilan</h2>
+              <p className="text-xs text-muted">{settings.darkMode ? 'Dark Mode' : 'Light Mode'}</p>
+            </div>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={settings.darkMode || false}
+              onChange={() => setSettings(s => ({ ...s, darkMode: !s.darkMode }))}
+            />
+            <span className="toggle-slider" />
+          </label>
         </div>
       </div>
 

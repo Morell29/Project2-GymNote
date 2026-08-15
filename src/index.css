@@ -71,6 +71,36 @@
   --transition: 0.2s ease;
 }
 
+[data-theme="dark"] {
+  --bg-base: #111214;
+  --bg-dark: #1a1c1f;
+  --bg-card: #1e2023;
+  --bg-card-2: #27292d;
+  --bg-input: #1e2023;
+  --bg-hover: #2d3035;
+  --bg-modal: rgba(0, 0, 0, 0.92);
+
+  --text-primary: #f0f0f1;
+  --text-secondary: #9a9da2;
+  --text-muted: #5e6167;
+  --text-on-accent: #ffffff;
+  --text-on-dark: #ffffff;
+  --text-on-dark-secondary: rgba(255, 255, 255, 0.6);
+
+  --border: #2d2f33;
+  --border-accent: rgba(223, 28, 47, 0.3);
+  --border-hover: #44474c;
+
+  --push-bg: rgba(223, 28, 47, 0.1);
+  --pull-bg: rgba(58, 123, 213, 0.1);
+  --leg-bg: rgba(45, 157, 74, 0.1);
+  --bw-bg: rgba(139, 92, 246, 0.1);
+  --others-bg: rgba(217, 119, 6, 0.1);
+
+  --accent-glow: rgba(223, 28, 47, 0.2);
+  --accent-glow-sm: rgba(223, 28, 47, 0.12);
+}
+
 html, body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg-base);
@@ -213,7 +243,7 @@ p  { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 
 .input {
   background: var(--bg-input);
-  border: 1px solid #888b93;
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -464,7 +494,7 @@ select.input {
 
 .set-input {
   background: var(--bg-input);
-  border: 1px solid #888b93;
+  border: 1px solid var(--border-hover);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, Plus, Pencil } from 'lucide-react'
+import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil } from 'lucide-react'
 import { useWorkouts, useExerciseLibrary, useSettings } from '../hooks/useStorage'
-import { getMaxWeight, calculateStreak, getWorkoutDays, formatRelativeDate } from '../utils/workoutUtils'
+import { getMaxWeight, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
 import QuickLogModal from '../components/QuickLogModal'
 import UpdateProgressModal from '../components/UpdateProgressModal'
@@ -177,6 +177,7 @@ export default function Dashboard() {
   const [showQuickLog, setShowQuickLog]     = useState(false)
   const [updateSession, setUpdateSession]   = useState(null)
   const [editExercise, setEditExercise]     = useState(null)
+  const [calMonth, setCalMonth]             = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
 
   const streak       = calculateStreak(workouts)
   const totalSessions = workouts.length
@@ -193,24 +194,24 @@ export default function Dashboard() {
   })
 
   const workoutDays = getWorkoutDays(workouts)
-  const calDays = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (13 - i))
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    return {
-      key,
-      day: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'][d.getDay()],
-      num: d.getDate(),
-      hasWorkout: workoutDays.has(key),
-      isToday: i === 13,
-    }
-  })
 
-  const lastSession = workouts.find(w => {
-    const d = new Date(w.date)
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    return key !== todayKey
-  })
+  const calYear = calMonth.getFullYear()
+  const calMon = calMonth.getMonth()
+  const daysInMonth = new Date(calYear, calMon + 1, 0).getDate()
+  const firstDayOfWeek = new Date(calYear, calMon, 1).getDay()
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
+  const calMonthLabel = new Date(calYear, calMon).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
+  const calGrid = []
+  for (let i = 0; i < firstDayOfWeek; i++) calGrid.push(null)
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${calYear}-${String(calMon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+    calGrid.push({ day: d, key, hasWorkout: workoutDays.has(key), isToday: key === todayStr })
+  }
+
+  const prevMonth = () => setCalMonth(new Date(calYear, calMon - 1, 1))
+  const nextMonth = () => setCalMonth(new Date(calYear, calMon + 1, 1))
 
   const lastAnySession = workouts.length
     ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
@@ -241,7 +242,7 @@ export default function Dashboard() {
 
       <div className="greeting-card">
         <p style={{ marginBottom: 4, color: 'var(--text-on-dark-secondary)', fontSize: '12px' }}>
-          Selamat datang kembali,
+          Welcome back KING!!,
         </p>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
           <h1 style={{ fontSize: '26px', fontWeight: 300, color: 'var(--text-on-dark)', letterSpacing: '-0.104px' }}>
@@ -305,25 +306,48 @@ export default function Dashboard() {
 
       <div className="card mb-4">
         <div className="section-header">
-          <h2 style={{ fontSize: '16px' }}>📅 Aktivitas 2 Minggu</h2>
-          {streak > 0 && (
-            <span className="badge badge-yellow">{streak} hari streak</span>
-          )}
+          <button onClick={prevMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
+            <ChevronLeft size={16} />
+          </button>
+          <h2 style={{ fontSize: '16px', textTransform: 'capitalize' }}>{calMonthLabel}</h2>
+          <button onClick={nextMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
+            <ChevronRight size={16} />
+          </button>
         </div>
-        <div className="calendar-strip">
-          {calDays.map(d => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, textAlign: 'center' }}>
+          {['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(d => (
+            <div key={d} style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-muted)', padding: '4px 0' }}>{d}</div>
+          ))}
+          {calGrid.map((cell, i) => (
             <div
-              key={d.key}
-              className={`cal-day ${d.hasWorkout ? 'has-workout' : ''} ${d.isToday ? 'today' : ''}`}
+              key={i}
+              style={{
+                aspectRatio: '1',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: cell?.isToday ? 600 : 400,
+                color: cell ? (cell.isToday ? 'var(--accent)' : 'var(--text-primary)') : 'transparent',
+                background: cell?.hasWorkout ? 'var(--accent-glow-sm)' : 'transparent',
+                border: cell?.isToday ? '1.5px solid var(--accent)' : '1.5px solid transparent',
+                position: 'relative',
+              }}
             >
-              <span className="cal-day-name">{d.day}</span>
-              <span className="cal-day-num" style={{ color: d.isToday ? 'var(--accent)' : 'var(--text-primary)' }}>
-                {d.num}
-              </span>
-              {d.hasWorkout && <span className="cal-dot" />}
+              {cell ? cell.day : ''}
+              {cell?.hasWorkout && (
+                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', position: 'absolute', bottom: 3 }} />
+              )}
             </div>
           ))}
         </div>
+        {streak > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10 }}>
+            <span className="badge badge-yellow">{streak} hari streak</span>
+          </div>
+        )}
       </div>
 
       <div className="section-header" style={{ marginBottom: 10 }}>
@@ -431,28 +455,6 @@ export default function Dashboard() {
           })
         )}
       </div>
-
-      {lastSession && todaySessions.length === 0 && (
-        <div className="card" style={{ cursor: 'pointer' }} onClick={() => navigate('/workout')}>
-          <div className="section-header">
-            <h2 style={{ fontSize: '14px' }}>📋 Sesi Terakhir</h2>
-            <ChevronRight size={16} color="var(--text-muted)" />
-          </div>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 10 }}>
-            {lastSession.category || lastSession.name || 'Latihan'} · {formatRelativeDate(lastSession.date)}
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {lastSession.exercises?.slice(0, 5).map(ex => (
-              <span key={ex.exerciseId} className="badge badge-cream">
-                {library.find(l => l.id === ex.exerciseId)?.name || ex.exerciseId}
-              </span>
-            ))}
-            {lastSession.exercises?.length > 5 && (
-              <span className="badge badge-cream">+{lastSession.exercises.length - 5} lagi</span>
-            )}
-          </div>
-        </div>
-      )}
 
       {showExport && (
         <ExportButton

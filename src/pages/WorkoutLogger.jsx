@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell } from 'lucide-react'
 import UpdateProgressModal from '../components/UpdateProgressModal'
+import QuickEditModal from '../components/QuickEditModal'
 import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
 import { calculateVolume, getMaxWeight } from '../utils/workoutUtils'
 
@@ -289,6 +290,7 @@ export default function WorkoutLogger() {
   const [showAddExercise, setShowAddExercise] = useState(false)
   const [updateSession, setUpdateSession]     = useState(null)
   const [expandedCat, setExpandedCat]         = useState(null)
+  const [editExercise, setEditExercise]       = useState(null)
 
   const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))
   const deleteSession  = (id) => setWorkouts(prev => prev.filter(w => w.id !== id))
@@ -426,6 +428,20 @@ export default function WorkoutLogger() {
                             </div>
 
                             <button
+                              onClick={(e) => { e.stopPropagation(); setEditExercise(ex) }}
+                              style={{
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                color: 'var(--accent)', padding: 6,
+                                display: 'flex', alignItems: 'center',
+                                borderRadius: 6, flexShrink: 0,
+                                transition: 'color 0.2s ease, background 0.2s ease',
+                              }}
+                              title="Catat berat"
+                            >
+                              <Pencil size={14} />
+                            </button>
+
+                            <button
                               onClick={(e) => { e.stopPropagation(); deleteExercise(ex.id) }}
                               style={{
                                 background: 'none', border: 'none', cursor: 'pointer',
@@ -492,6 +508,14 @@ export default function WorkoutLogger() {
           session={updateSession}
           library={library}
           onClose={() => setUpdateSession(null)}
+        />
+      )}
+
+      {editExercise && (
+        <QuickEditModal
+          exercise={editExercise}
+          workouts={workouts}
+          onClose={() => setEditExercise(null)}
         />
       )}
     </div>
