@@ -78,6 +78,20 @@ export function useTemplates() {
   return { templates, setTemplates }
 }
 
+// Hook untuk catatan kalender { 'YYYY-MM-DD': 'note text' }
+export function useCalNotes() {
+  const [calNotes, setCalNotes] = useLocalStorage('gymNote_calNotes', {})
+  const setNote = (dateKey, text) => {
+    setCalNotes(prev => {
+      const next = { ...prev }
+      if (text.trim()) next[dateKey] = text.trim()
+      else delete next[dateKey]
+      return next
+    })
+  }
+  return { calNotes, setNote }
+}
+
 // Hook untuk user settings
 export function useSettings() {
   const [settings, setSettings] = useLocalStorage('gymNote_settings', {

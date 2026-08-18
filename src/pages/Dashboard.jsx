@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil } from 'lucide-react'
-import { useWorkouts, useExerciseLibrary, useSettings } from '../hooks/useStorage'
+import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote } from 'lucide-react'
+import { useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
 import { getMaxWeight, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
 import QuickLogModal from '../components/QuickLogModal'
@@ -171,6 +171,7 @@ export default function Dashboard() {
   const { workouts } = useWorkouts()
   const { library } = useExerciseLibrary()
   const { settings } = useSettings()
+  const { calNotes, setNote } = useCalNotes()
 
   const [activeTab, setActiveTab]           = useState('Push')
   const [showExport, setShowExport]         = useState(false)
@@ -178,6 +179,10 @@ export default function Dashboard() {
   const [updateSession, setUpdateSession]   = useState(null)
   const [editExercise, setEditExercise]     = useState(null)
   const [calMonth, setCalMonth]             = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
+  const [calExpanded, setCalExpanded]       = useState(false)
+  const [noteTarget, setNoteTarget]         = useState(null)
+  const [noteText, setNoteText]             = useState('')
+  const noteInputRef = useRef(null)
 
   const streak       = calculateStreak(workouts)
   const totalSessions = workouts.length
@@ -212,6 +217,20 @@ export default function Dashboard() {
 
   const prevMonth = () => setCalMonth(new Date(calYear, calMon - 1, 1))
   const nextMonth = () => setCalMonth(new Date(calYear, calMon + 1, 1))
+
+  const openNote = (cell) => {
+    if (!cell) return
+    setNoteTarget(cell)
+    setNoteText(calNotes[cell.key] || '')
+  }
+  const saveNote = () => {
+    if (noteTarget) setNote(noteTarget.key, noteText)
+    setNoteTarget(null)
+  }
+
+  useEffect(() => {
+    if (noteTarget && noteInputRef.current) noteInputRef.current.focus()
+  }, [noteTarget])
 
   const lastAnySession = workouts.length
     ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
@@ -309,46 +328,101 @@ export default function Dashboard() {
           <button onClick={prevMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
             <ChevronLeft size={16} />
           </button>
-          <h2 style={{ fontSize: '16px', textTransform: 'capitalize' }}>{calMonthLabel}</h2>
+          <h2 style={{ fontSize: '14px', textTransform: 'capitalize' }}>{calMonthLabel}</h2>
           <button onClick={nextMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
             <ChevronRight size={16} />
           </button>
+          <button
+            onClick={() => setCalExpanded(v => !v)}
+            className="btn btn-ghost btn-icon btn-sm"
+            style={{ padding: 6, marginLeft: 2 }}
+            title={calExpanded ? 'Perkecil' : 'Perbesar'}
+          >
+            {calExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, textAlign: 'center' }}>
-          {['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(d => (
-            <div key={d} style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-muted)', padding: '4px 0' }}>{d}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: calExpanded ? 4 : 2, textAlign: 'center' }}>
+          {['M','S','S','R','K','J','S'].map((d, i) => (
+            <div key={i} style={{ fontSize: '10px', fontWeight: 500, color: 'var(--text-muted)', padding: calExpanded ? '4px 0' : '2px 0' }}>{d}</div>
           ))}
-          {calGrid.map((cell, i) => (
-            <div
-              key={i}
-              style={{
-                aspectRatio: '1',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: cell?.isToday ? 600 : 400,
-                color: cell ? (cell.isToday ? 'var(--accent)' : 'var(--text-primary)') : 'transparent',
-                background: cell?.hasWorkout ? 'var(--accent-glow-sm)' : 'transparent',
-                border: cell?.isToday ? '1.5px solid var(--accent)' : '1.5px solid transparent',
-                position: 'relative',
-              }}
-            >
-              {cell ? cell.day : ''}
-              {cell?.hasWorkout && (
-                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', position: 'absolute', bottom: 3 }} />
-              )}
-            </div>
-          ))}
+          {calGrid.map((cell, i) => {
+            const hasNote = cell && !!calNotes[cell.key]
+            return (
+              <div
+                key={i}
+                onClick={() => openNote(cell)}
+                style={{
+                  height: calExpanded ? undefined : 28,
+                  aspectRatio: calExpanded ? '1' : undefined,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: calExpanded ? '6px' : '4px',
+                  fontSize: calExpanded ? '13px' : '11px',
+                  fontWeight: cell?.isToday ? 600 : 400,
+                  color: cell ? (cell.isToday ? 'var(--accent)' : 'var(--text-primary)') : 'transparent',
+                  background: cell?.hasWorkout ? 'var(--accent-glow-sm)' : 'transparent',
+                  border: cell?.isToday ? '1.5px solid var(--accent)' : '1.5px solid transparent',
+                  position: 'relative',
+                  cursor: cell ? 'pointer' : 'default',
+                }}
+              >
+                {cell ? cell.day : ''}
+                {cell?.hasWorkout && (
+                  <span style={{ width: calExpanded ? 4 : 3, height: calExpanded ? 4 : 3, borderRadius: '50%', background: 'var(--accent)', position: 'absolute', bottom: calExpanded ? 3 : 2 }} />
+                )}
+                {hasNote && (
+                  <span style={{ width: calExpanded ? 4 : 3, height: calExpanded ? 4 : 3, borderRadius: '50%', background: 'var(--text-muted)', position: 'absolute', bottom: calExpanded ? 3 : 2, right: calExpanded ? 3 : 2 }} />
+                )}
+              </div>
+            )
+          })}
         </div>
         {streak > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
             <span className="badge badge-yellow">{streak} hari streak</span>
           </div>
         )}
       </div>
+
+      {noteTarget && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && saveNote()}>
+          <div className="modal-sheet" style={{ maxHeight: '60dvh' }}>
+            <div className="modal-handle" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <StickyNote size={16} color="var(--accent)" />
+              <h2 style={{ fontSize: '15px' }}>
+                Catatan — {new Date(noteTarget.key).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+              </h2>
+            </div>
+            <textarea
+              ref={noteInputRef}
+              value={noteText}
+              onChange={e => setNoteText(e.target.value)}
+              placeholder="Tulis catatan singkat..."
+              rows={4}
+              style={{
+                width: '100%',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                padding: '10px 12px',
+                fontSize: '14px',
+                color: 'var(--text-primary)',
+                resize: 'none',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              onKeyDown={e => { if (e.key === 'Enter' && e.ctrlKey) saveNote() }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => setNoteTarget(null)}>Batal</button>
+              <button className="btn btn-primary btn-sm" style={{ flex: 2 }} onClick={saveNote}>Simpan</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="section-header" style={{ marginBottom: 10 }}>
         <h2 style={{ fontSize: '16px' }}>📈 Progressive Overload</h2>
