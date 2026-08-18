@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, Check } from 'lucide-react'
+import { X, Plus, Trash2, Check, BarChart2, Trophy } from 'lucide-react'
 import { useWorkouts } from '../hooks/useStorage'
 import { generateId, getMaxWeight } from '../utils/workoutUtils'
 
@@ -85,7 +85,7 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
               border: '1px solid var(--border)',
             }}
           >
-            <span className="text-xs text-muted">📊 Catatan terakhir:</span>
+            <span className="text-xs text-muted" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><BarChart2 size={12} /> Catatan terakhir:</span>
             <span style={{ fontWeight: 500, fontSize: '14px', color: 'var(--text-primary)' }}>
               {isBW || isSEC ? `${lastEntry?.sets?.length || 0} set` : `${lastMax} ${unit}`}
             </span>
@@ -100,9 +100,12 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
                   fontSize: '11px',
                   fontWeight: 600,
                   padding: '2px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
                 }}
               >
-                🏆 PR BARU!
+                <Trophy size={11} /> PR BARU!
               </span>
             )}
           </div>
@@ -204,7 +207,7 @@ export default function QuickEditModal({ exercise, workouts, onClose }) {
           onClick={handleSave}
         >
           <Check size={17} />
-          {isNewPR ? '🏆 Simpan PR Baru!' : 'Simpan Catatan'}
+          {isNewPR ? <><Trophy size={15} /> Simpan PR Baru!</> : 'Simpan Catatan'}
         </button>
       </div>
     </div>

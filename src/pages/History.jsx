@@ -1,7 +1,7 @@
 // src/pages/History.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, X, Trash2, TrendingUp } from 'lucide-react'
+import { ChevronRight, X, Trash2, TrendingUp, Calendar, Inbox } from 'lucide-react'
 import ProgressChart from '../components/ProgressChart'
 import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
 import { formatRelativeDate, getExerciseHistory, calculateVolume, getMaxWeight } from '../utils/workoutUtils'
@@ -137,12 +137,12 @@ export default function History() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Riwayat <span style={{ color: 'var(--accent)' }}>📅</span></h1>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Riwayat <Calendar size={22} color="var(--accent)" /></h1>
       </div>
 
       {sorted.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📭</div>
+          <div className="empty-icon" style={{ display: 'flex', justifyContent: 'center' }}><Inbox size={48} strokeWidth={1} /></div>
           <h3>Belum ada riwayat</h3>
           <p>Selesaikan sesi latihan pertamamu</p>
         </div>

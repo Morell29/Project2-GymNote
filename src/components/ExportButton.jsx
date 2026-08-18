@@ -1,12 +1,12 @@
 import { useRef, useState, forwardRef } from 'react'
-import { X, Loader } from 'lucide-react'
+import { X, Loader, Image, FileText, Flame, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap, Star, Trophy } from 'lucide-react'
 import { getMaxWeight, calculateStreak } from '../utils/workoutUtils'
 
 const CATEGORIES = [
-  { key: 'Push',        emoji: '💪', color: '#df1c2f' },
-  { key: 'Pull',        emoji: '🏋️', color: '#3a7bd5' },
-  { key: 'Leg',         emoji: '🦵', color: '#2d9d4a' },
-  { key: 'Body Weight', emoji: '🤸', color: '#8b5cf6' },
+  { key: 'Push',        Icon: ArrowUpFromLine, color: '#df1c2f' },
+  { key: 'Pull',        Icon: Dumbbell,        color: '#3a7bd5' },
+  { key: 'Leg',         Icon: MoveDown,        color: '#2d9d4a' },
+  { key: 'Body Weight', Icon: Activity,        color: '#8b5cf6' },
 ]
 
 function getExerciseSummary(workouts, exerciseId) {
@@ -40,9 +40,10 @@ function TrendBadge({ trend }) {
     up:   { icon: '↗', color: '#2d9d4a', label: 'Naik' },
     down: { icon: '↘', color: '#df1c2f', label: 'Turun' },
     same: { icon: '→', color: '#a8acb1', label: 'Sama' },
-    new:  { icon: '★', color: '#df1c2f', label: 'Pertama' },
+    new:  { icon: null, color: '#df1c2f', label: 'Pertama' },
   }
   const t = map[trend]
+  if (trend === 'new') return <span style={{ color: t.color, fontWeight: 500, fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Star size={11} fill={t.color} /> {t.label}</span>
   return <span style={{ color: t.color, fontWeight: 500, fontSize: 12 }}>{t.icon} {t.label}</span>
 }
 
@@ -73,8 +74,8 @@ const ExportTemplate = forwardRef(function ExportTemplate({ workouts, library, u
             <div style={{ fontSize: 11, color: '#a8acb1', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.3px', fontWeight: 500 }}>
               GymNote · Progressive Overload Report
             </div>
-            <div style={{ fontSize: 22, fontWeight: 300, color: '#ffffff', marginBottom: 6, letterSpacing: '-0.176px' }}>
-              {username} 💪
+            <div style={{ fontSize: 22, fontWeight: 300, color: '#ffffff', marginBottom: 6, letterSpacing: '-0.176px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              {username} <ArrowUpFromLine size={18} color="#df1c2f" />
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
               <div>
@@ -83,7 +84,7 @@ const ExportTemplate = forwardRef(function ExportTemplate({ workouts, library, u
               </div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 500, color: '#ffffff' }}>{streak}</div>
-                <div style={{ fontSize: 10, color: '#a8acb1', textTransform: 'uppercase', fontWeight: 500 }}>🔥 Streak</div>
+                <div style={{ fontSize: 10, color: '#a8acb1', textTransform: 'uppercase', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}><Flame size={10} color="#f97316" /> Streak</div>
               </div>
             </div>
           </div>
@@ -112,7 +113,7 @@ const ExportTemplate = forwardRef(function ExportTemplate({ workouts, library, u
               marginBottom: 8,
               border: `1px solid ${cat.color}30`,
             }}>
-              <span style={{ fontSize: 14 }}>{cat.emoji}</span>
+              <cat.Icon size={14} color={cat.color} />
               <span style={{ fontWeight: 500, fontSize: 13, color: cat.color, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                 {cat.key}
               </span>
@@ -275,7 +276,7 @@ export default function ExportButton({ workouts, library, username, onClose }) {
           disabled={!!loading}
         >
           <div className="export-option-icon" style={{ background: 'rgba(58,123,213,0.08)', color: '#3a7bd5' }}>
-            {loading === 'img' ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : '🖼️'}
+            {loading === 'img' ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <Image size={20} />}
           </div>
           <div>
             <div style={{ fontWeight: 500, fontSize: '15px', color: 'var(--text-primary)', marginBottom: 2 }}>
@@ -292,7 +293,7 @@ export default function ExportButton({ workouts, library, username, onClose }) {
           disabled={!!loading}
         >
           <div className="export-option-icon" style={{ background: 'rgba(223,28,47,0.06)', color: 'var(--accent)' }}>
-            {loading === 'pdf' ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : '📄'}
+            {loading === 'pdf' ? <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <FileText size={20} />}
           </div>
           <div>
             <div style={{ fontWeight: 500, fontSize: '15px', color: 'var(--text-primary)', marginBottom: 2 }}>

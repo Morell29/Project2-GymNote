@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, Upload, Trash2, User, Clock, Sun, Moon } from 'lucide-react'
+import { Download, Upload, Trash2, User, Clock, Sun, Moon, Settings2, Package, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
 import { useSettings, useWorkouts, useExerciseLibrary, useTemplates } from '../hooks/useStorage'
 
 export default function Settings() {
@@ -39,9 +39,9 @@ export default function Settings() {
         if (data.library) setLibrary(data.library)
         if (data.templates) setTemplates(data.templates)
         if (data.settings) setSettings(data.settings)
-        setImportMsg({ type: 'success', text: `✓ Berhasil import ${data.workouts?.length || 0} sesi latihan` })
+        setImportMsg({ type: 'success', text: `Berhasil import ${data.workouts?.length || 0} sesi latihan` })
       } catch {
-        setImportMsg({ type: 'error', text: '✗ File tidak valid, gagal import' })
+        setImportMsg({ type: 'error', text: 'File tidak valid, gagal import' })
       }
     }
     reader.readAsText(file)
@@ -63,7 +63,7 @@ export default function Settings() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 style={{ fontSize: '26px', fontWeight: 500 }}>Pengaturan <span style={{ color: 'var(--accent)' }}>⚙️</span></h1>
+        <h1 style={{ fontSize: '26px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>Pengaturan <Settings2 size={22} color="var(--accent)" /></h1>
       </div>
 
       <div className="card mb-4">
@@ -145,7 +145,7 @@ export default function Settings() {
       </div>
 
       <div className="card mb-4">
-        <h2 className="mb-4">📦 Kelola Data</h2>
+        <h2 className="mb-4" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Package size={18} /> Kelola Data</h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <p className="text-sm text-muted">
@@ -161,7 +161,11 @@ export default function Settings() {
               color: importMsg.type === 'success' ? '#2d9d4a' : 'var(--accent)',
               fontSize: '14px',
               fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}>
+              {importMsg.type === 'success' ? <CheckCircle size={16} /> : <XCircle size={16} />}
               {importMsg.text}
             </div>
           )}
@@ -178,7 +182,7 @@ export default function Settings() {
       </div>
 
       <div className="card" style={{ border: '1px solid var(--border-accent)' }}>
-        <h2 className="mb-3" style={{ color: 'var(--accent)' }}>⚠️ Danger Zone</h2>
+        <h2 className="mb-3" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={18} /> Danger Zone</h2>
         <p className="text-sm text-muted mb-3">Hapus semua sesi latihan. Tindakan ini tidak bisa dibatalkan.</p>
         <button
           className={`btn btn-full ${confirmClear ? 'btn-danger' : 'btn-ghost'}`}
@@ -186,7 +190,7 @@ export default function Settings() {
           style={{ borderColor: 'var(--border-accent)' }}
         >
           <Trash2 size={16} />
-          {confirmClear ? '⚠️ Tekan lagi untuk konfirmasi' : 'Hapus Semua Sesi'}
+          {confirmClear ? <><AlertTriangle size={14} /> Tekan lagi untuk konfirmasi</> : 'Hapus Semua Sesi'}
         </button>
       </div>
 

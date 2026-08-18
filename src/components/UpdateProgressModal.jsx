@@ -1,21 +1,21 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, Check, ChevronDown, ChevronUp, SkipForward } from 'lucide-react'
+import { X, Plus, Trash2, Check, ChevronDown, ChevronUp, SkipForward, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap } from 'lucide-react'
 import { useWorkouts } from '../hooks/useStorage'
 import { generateId } from '../utils/workoutUtils'
 
 const CAT_META = {
-  'Push':        { emoji: '💪', color: 'var(--push-color)',   bg: 'var(--push-bg)'   },
-  'Pull':        { emoji: '🏋️', color: 'var(--pull-color)',   bg: 'var(--pull-bg)'   },
-  'Leg':         { emoji: '🦵', color: 'var(--leg-color)',    bg: 'var(--leg-bg)'    },
-  'Body Weight': { emoji: '🤸', color: 'var(--bw-color)',     bg: 'var(--bw-bg)'     },
-  'Others':      { emoji: '⚡', color: 'var(--others-color)', bg: 'var(--others-bg)' },
+  'Push':        { Icon: ArrowUpFromLine, color: 'var(--push-color)',   bg: 'var(--push-bg)'   },
+  'Pull':        { Icon: Dumbbell,        color: 'var(--pull-color)',   bg: 'var(--pull-bg)'   },
+  'Leg':         { Icon: MoveDown,        color: 'var(--leg-color)',    bg: 'var(--leg-bg)'    },
+  'Body Weight': { Icon: Activity,        color: 'var(--bw-color)',     bg: 'var(--bw-bg)'     },
+  'Others':      { Icon: Zap,             color: 'var(--others-color)', bg: 'var(--others-bg)' },
 }
 
 export default function UpdateProgressModal({ session, library, onClose }) {
   const { setWorkouts } = useWorkouts()
 
   const category = session.category || session.name
-  const meta = CAT_META[category] || { emoji: '🏋️', color: 'var(--accent)', bg: 'var(--accent-glow-sm)' }
+  const meta = CAT_META[category] || { Icon: Dumbbell, color: 'var(--accent)', bg: 'var(--accent-glow-sm)' }
 
   const catExercises = library.filter(ex => ex.category === category)
 
@@ -127,7 +127,7 @@ export default function UpdateProgressModal({ session, library, onClose }) {
         <div className="flex items-center justify-between mb-4">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-              <span style={{ fontSize: '1.1rem' }}>{meta.emoji}</span>
+              <meta.Icon size={18} color={meta.color} />
               <h2 style={{ fontSize: '16px' }}>Update Progress</h2>
             </div>
             <p className="text-xs text-muted">{category} · {dateStr}</p>
@@ -158,7 +158,7 @@ export default function UpdateProgressModal({ session, library, onClose }) {
         <div style={{ overflowY: 'auto', maxHeight: '52dvh', paddingRight: 2, marginBottom: 14 }}>
           {catExercises.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.3 }}>🏋️</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8, opacity: 0.3 }}><Dumbbell size={32} /></div>
               <p className="text-sm">Belum ada exercise di kategori ini</p>
             </div>
           ) : (

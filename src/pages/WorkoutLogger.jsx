@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell } from 'lucide-react'
+import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap } from 'lucide-react'
 import UpdateProgressModal from '../components/UpdateProgressModal'
 import QuickEditModal from '../components/QuickEditModal'
 import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
@@ -9,11 +9,11 @@ const ALL_CATS = ['Push', 'Pull', 'Leg', 'Body Weight', 'Others']
 const UNITS    = ['KG', 'BAR', 'BW', 'SEC']
 
 const CAT_META = {
-  'Push':        { emoji: '💪', color: 'var(--push-color)',   bg: 'var(--push-bg)' },
-  'Pull':        { emoji: '🏋️', color: 'var(--pull-color)',   bg: 'var(--pull-bg)' },
-  'Leg':         { emoji: '🦵', color: 'var(--leg-color)',    bg: 'var(--leg-bg)' },
-  'Body Weight': { emoji: '🤸', color: 'var(--bw-color)',     bg: 'var(--bw-bg)' },
-  'Others':      { emoji: '⚡', color: 'var(--others-color)', bg: 'var(--others-bg)' },
+  'Push':        { Icon: ArrowUpFromLine, color: 'var(--push-color)',   bg: 'var(--push-bg)' },
+  'Pull':        { Icon: Dumbbell,        color: 'var(--pull-color)',   bg: 'var(--pull-bg)' },
+  'Leg':         { Icon: MoveDown,        color: 'var(--leg-color)',    bg: 'var(--leg-bg)' },
+  'Body Weight': { Icon: Activity,        color: 'var(--bw-color)',     bg: 'var(--bw-bg)' },
+  'Others':      { Icon: Zap,             color: 'var(--others-color)', bg: 'var(--others-bg)' },
 }
 
 function getCategoryFromSession(session, library) {
@@ -91,7 +91,7 @@ function AddExerciseModal({ onClose, onAdded }) {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                   }}
                 >
-                  <span>{m.emoji}</span><span>{c}</span>
+                  <m.Icon size={18} color={active ? m.color : 'var(--text-muted)'} /><span>{c}</span>
                 </button>
               )
             })}
@@ -154,9 +154,9 @@ function SessionCard({ session, library, workouts, onUpdateProgress, onDelete })
           width: 36, height: 36, borderRadius: 6,
           background: meta.bg, border: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1rem', flexShrink: 0,
+          flexShrink: 0,
         }}>
-          {meta.emoji}
+          <meta.Icon size={18} color={meta.color} />
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -320,8 +320,8 @@ export default function WorkoutLogger() {
     <div className="page">
       <div className="page-header" style={{ paddingTop: 20 }}>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: '26px', fontWeight: 500, letterSpacing: '-0.104px' }}>
-            Latihan <span style={{ color: 'var(--accent)' }}>🏋️</span>
+          <h1 style={{ fontSize: '26px', fontWeight: 500, letterSpacing: '-0.104px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            Latihan <Dumbbell size={22} color="var(--accent)" />
           </h1>
           <p className="text-sm text-muted" style={{ marginTop: 2 }}>
             {sorted.length} sesi · {library.length} gerakan tersimpan
@@ -361,9 +361,10 @@ export default function WorkoutLogger() {
                   style={{
                     background: meta.bg,
                     border: `1px solid var(--border)`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
-                  {meta.emoji}
+                  <meta.Icon size={18} color={meta.color} />
                 </div>
                 <div className="cat-info">
                   <div className="cat-name" style={{ color: isExpanded ? meta.color : 'var(--text-primary)' }}>

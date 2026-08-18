@@ -1,6 +1,7 @@
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
+import { BarChart2 } from 'lucide-react'
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -27,8 +28,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function ProgressChart({ data, dataKey = 'maxWeight', color = 'var(--accent)', name = 'Berat Maks' }) {
   if (!data || data.length < 2) {
     return (
-      <div className="empty-state" style={{ padding: '24px' }}>
-        <span style={{ fontSize: '1.5rem', opacity: 0.2 }}>📊</span>
+      <div className="empty-state" style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <BarChart2 size={36} style={{ opacity: 0.2, marginBottom: 8 }} />
         <p className="text-xs text-muted text-center">Butuh minimal 2 sesi untuk menampilkan grafik</p>
       </div>
     )

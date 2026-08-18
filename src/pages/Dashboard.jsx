@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote } from 'lucide-react'
+import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy, CalendarDays } from 'lucide-react'
 import { useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
 import { getMaxWeight, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
@@ -9,11 +9,11 @@ import UpdateProgressModal from '../components/UpdateProgressModal'
 import QuickEditModal from '../components/QuickEditModal'
 
 const CATEGORIES = [
-  { key: 'Push',        label: 'Push',        emoji: '💪', colorClass: 'push'   },
-  { key: 'Pull',        label: 'Pull',        emoji: '🏋️', colorClass: 'pull'   },
-  { key: 'Leg',         label: 'Leg',         emoji: '🦵', colorClass: 'leg'    },
-  { key: 'Body Weight', label: 'Body Weight', emoji: '🤸', colorClass: 'bw'     },
-  { key: 'Others',      label: 'Others',      emoji: '⚡', colorClass: 'others' },
+  { key: 'Push',        label: 'Push',        Icon: ArrowUpFromLine, colorClass: 'push'   },
+  { key: 'Pull',        label: 'Pull',        Icon: Dumbbell,        colorClass: 'pull'   },
+  { key: 'Leg',         label: 'Leg',         Icon: MoveDown,        colorClass: 'leg'    },
+  { key: 'Body Weight', label: 'Body Weight', Icon: Activity,        colorClass: 'bw'     },
+  { key: 'Others',      label: 'Others',      Icon: Zap,             colorClass: 'others' },
 ]
 
 const CAT_COLORS = {
@@ -72,7 +72,7 @@ function TrendLabel({ trend, weight, prevWeight, unit }) {
 function TodaySessionCard({ session, library, onUpdateProgress }) {
   const category = session.category || session.name
   const cat = CATEGORIES.find(c => c.key === category)
-  const meta = cat || { emoji: '🏋️', colorClass: 'others' }
+  const meta = cat || { Icon: Dumbbell, colorClass: 'others' }
   const color = CAT_COLORS[meta.colorClass] || 'var(--accent)'
   const bg    = CAT_BG[meta.colorClass]    || 'var(--accent-glow-sm)'
 
@@ -89,8 +89,8 @@ function TodaySessionCard({ session, library, onUpdateProgress }) {
         marginBottom: 8,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: '1.2rem' }}>{meta.emoji}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <meta.Icon size={18} color={color} />
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 500, fontSize: '14px', color: color }}>
             {category}
@@ -264,8 +264,8 @@ export default function Dashboard() {
           Welcome back KING!!,
         </p>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h1 style={{ fontSize: '26px', fontWeight: 300, color: 'var(--text-on-dark)', letterSpacing: '-0.104px' }}>
-            {settings.username} <span style={{ color: 'var(--accent)' }}>💪</span>
+          <h1 style={{ fontSize: '26px', fontWeight: 300, color: 'var(--text-on-dark)', letterSpacing: '-0.104px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            {settings.username} <ArrowUpFromLine size={20} color="var(--accent)" />
           </h1>
           <button
             className="btn btn-sm btn-icon"
@@ -281,16 +281,16 @@ export default function Dashboard() {
         <div style={{ display: 'flex', gap: 28 }}>
           <div>
             <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{streak}</div>
-            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4 }}>🔥 Streak</div>
+            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Flame size={11} color="#f97316" /> Streak</div>
           </div>
           <div>
             <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{totalSessions}</div>
-            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4 }}>📅 Sesi</div>
+            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={11} /> Sesi</div>
           </div>
           {prCount > 0 && (
             <div>
               <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{prCount}</div>
-              <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4 }}>🏆 PR Baru</div>
+              <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Trophy size={11} /> PR Baru</div>
             </div>
           )}
         </div>
@@ -309,7 +309,7 @@ export default function Dashboard() {
       {todaySessions.length > 0 && (
         <div className="mb-4">
           <div className="section-header" style={{ marginBottom: 10 }}>
-            <h2 style={{ fontSize: '16px' }}>🗓 Hari Ini</h2>
+            <h2 style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: 6 }}><CalendarDays size={16} /> Hari Ini</h2>
             <span className="badge badge-green">{todaySessions.length} sesi</span>
           </div>
           {todaySessions.map(s => (
@@ -425,7 +425,7 @@ export default function Dashboard() {
       )}
 
       <div className="section-header" style={{ marginBottom: 10 }}>
-        <h2 style={{ fontSize: '16px' }}>📈 Progressive Overload</h2>
+        <h2 style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={16} /> Progressive Overload</h2>
         {workouts.length > 0 && (
           <span
             className="text-xs text-muted"
@@ -445,7 +445,7 @@ export default function Dashboard() {
             className={`cat-tab ${activeTab === cat.key ? `active-${cat.colorClass}` : ''}`}
             onClick={() => setActiveTab(cat.key)}
           >
-            <span>{cat.emoji}</span>
+            <cat.Icon size={14} />
             {cat.label}
           </button>
         ))}
@@ -461,7 +461,7 @@ export default function Dashboard() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: '1.1rem' }}>{activeCat.emoji}</span>
+          <activeCat.Icon size={16} color={CAT_COLORS[activeCat.colorClass]} />
           <span style={{ fontWeight: 500, fontSize: '14px', color: CAT_COLORS[activeCat.colorClass] }}>
             {activeCat.label}
           </span>
@@ -472,7 +472,7 @@ export default function Dashboard() {
 
         {catExercises.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 16px' }}>
-            <div style={{ fontSize: '2rem', marginBottom: 8, opacity: 0.2 }}>🏋️</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8, opacity: 0.2 }}><Dumbbell size={32} /></div>
             <p className="text-xs text-muted">Belum ada latihan di kategori ini</p>
           </div>
         ) : (

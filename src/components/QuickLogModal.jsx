@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { X, Check } from 'lucide-react'
+import { X, Check, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Calendar } from 'lucide-react'
 import { useWorkouts } from '../hooks/useStorage'
 import { generateId } from '../utils/workoutUtils'
 
 const CATS = [
-  { key: 'Push',        emoji: '💪', label: 'Push',        colorVar: '--push-color',   bgVar: '--push-bg'   },
-  { key: 'Pull',        emoji: '🏋️', label: 'Pull',        colorVar: '--pull-color',   bgVar: '--pull-bg'   },
-  { key: 'Leg',         emoji: '🦵', label: 'Leg',         colorVar: '--leg-color',    bgVar: '--leg-bg'    },
-  { key: 'Body Weight', emoji: '🤸', label: 'Body Weight', colorVar: '--bw-color',     bgVar: '--bw-bg'     },
-  { key: 'Others',      emoji: '⚡', label: 'Others',      colorVar: '--others-color', bgVar: '--others-bg' },
+  { key: 'Push',        Icon: ArrowUpFromLine, label: 'Push',        colorVar: '--push-color',   bgVar: '--push-bg'   },
+  { key: 'Pull',        Icon: Dumbbell,        label: 'Pull',        colorVar: '--pull-color',   bgVar: '--pull-bg'   },
+  { key: 'Leg',         Icon: MoveDown,        label: 'Leg',         colorVar: '--leg-color',    bgVar: '--leg-bg'    },
+  { key: 'Body Weight', Icon: Activity,        label: 'Body Weight', colorVar: '--bw-color',     bgVar: '--bw-bg'     },
+  { key: 'Others',      Icon: Zap,             label: 'Others',      colorVar: '--others-color', bgVar: '--others-bg' },
 ]
 
 export default function QuickLogModal({ onClose, onLogged }) {
@@ -50,8 +50,8 @@ export default function QuickLogModal({ onClose, onLogged }) {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 style={{ fontSize: '18px', marginBottom: 3 }}>Catat Latihan</h2>
-            <p className="text-xs" style={{ color: 'var(--accent)', fontWeight: 500 }}>
-              📅 {dateDisplay}
+            <p className="text-xs" style={{ color: 'var(--accent)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Calendar size={13} /> {dateDisplay}
             </p>
           </div>
           <button
@@ -96,8 +96,8 @@ export default function QuickLogModal({ onClose, onLogged }) {
                   width: '100%',
                 }}
               >
-                <span style={{ fontSize: '1.25rem', width: 28, textAlign: 'center' }}>
-                  {cat.emoji}
+                <span style={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <cat.Icon size={20} color={isSelected ? `var(${cat.colorVar})` : 'var(--text-muted)'} />
                 </span>
                 <span
                   style={{

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, ChevronDown, ChevronUp, Timer, TrendingUp } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, ChevronUp, Timer, TrendingUp, Check } from 'lucide-react'
 import { createBlankSet, compareWithLast, getLastSessionForExercise } from '../utils/workoutUtils'
 
 export default function ExerciseCard({
@@ -127,7 +127,7 @@ export default function ExerciseCard({
                 style={{ cursor: 'pointer', border: 'none', width: '100%' }}
                 title="Tandai selesai"
               >
-                {set.done ? '✓' : idx + 1}
+                {set.done ? <Check size={13} strokeWidth={3} /> : idx + 1}
               </button>
               <input
                 className="set-input"
