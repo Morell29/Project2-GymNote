@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy, CalendarDays } from 'lucide-react'
+import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy } from 'lucide-react'
 import { useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
 import { getMaxWeight, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
@@ -69,102 +69,6 @@ function TrendLabel({ trend, weight, prevWeight, unit }) {
   return <span className="trend-same" style={{ fontSize: '12px', fontWeight: 500 }}>Sama</span>
 }
 
-function TodaySessionCard({ session, library, onUpdateProgress }) {
-  const category = session.category || session.name
-  const cat = CATEGORIES.find(c => c.key === category)
-  const meta = cat || { Icon: Dumbbell, colorClass: 'others' }
-  const color = CAT_COLORS[meta.colorClass] || 'var(--accent)'
-  const bg    = CAT_BG[meta.colorClass]    || 'var(--accent-glow-sm)'
-
-  const exerciseCount = session.exercises?.length || 0
-  const hasProgress = exerciseCount > 0
-
-  return (
-    <div
-      style={{
-        background: bg,
-        border: `1px solid var(--border)`,
-        borderRadius: '6px',
-        padding: '14px 16px',
-        marginBottom: 8,
-      }}
-    >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <meta.Icon size={18} color={color} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 500, fontSize: '14px', color: color }}>
-            {category}
-          </div>
-          <div className="text-xs text-muted" style={{ marginTop: 1 }}>
-            {hasProgress
-              ? `${exerciseCount} gerakan dicatat`
-              : 'Belum ada gerakan — klik Update Progress'}
-          </div>
-        </div>
-        <button
-          className="btn btn-sm"
-          id={`btn-update-${session.id}`}
-          onClick={() => onUpdateProgress(session)}
-          style={{
-            background: color,
-            color: 'var(--text-on-accent)',
-            fontWeight: 500,
-            fontSize: '12px',
-            padding: '7px 12px',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 5,
-          }}
-        >
-          <Pencil size={12} />
-          Update Progress
-        </button>
-      </div>
-
-      {hasProgress && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 9 }}>
-          {session.exercises.slice(0, 4).map(ex => {
-            const def = library.find(l => l.id === ex.exerciseId)
-            const maxW = getMaxWeight(ex)
-            return (
-              <span
-                key={ex.exerciseId}
-                style={{
-                  background: 'var(--bg-card-2)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  color: 'var(--text-secondary)',
-                  padding: '2px 8px',
-                }}
-              >
-                {def?.name || ex.exerciseId}
-                {maxW > 0 && ` · ${maxW} ${ex.unit}`}
-              </span>
-            )
-          })}
-          {session.exercises.length > 4 && (
-            <span
-              style={{
-                background: 'var(--bg-card-2)',
-                border: '1px solid var(--border)',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: 500,
-                color: 'var(--text-muted)',
-                padding: '2px 8px',
-              }}
-            >
-              +{session.exercises.length - 4} lagi
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -186,17 +90,6 @@ export default function Dashboard() {
 
   const streak       = calculateStreak(workouts)
   const totalSessions = workouts.length
-
-  const todayKey = (() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-  })()
-
-  const todaySessions = workouts.filter(w => {
-    const d = new Date(w.date)
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    return key === todayKey
-  })
 
   const workoutDays = getWorkoutDays(workouts)
 
@@ -261,7 +154,7 @@ export default function Dashboard() {
 
       <div className="greeting-card">
         <p style={{ marginBottom: 4, color: 'var(--text-on-dark-secondary)', fontSize: '12px' }}>
-          Welcome back KING!!,
+          Welcome back KING!!
         </p>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
           <h1 style={{ fontSize: '26px', fontWeight: 300, color: 'var(--text-on-dark)', letterSpacing: '-0.104px', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -306,22 +199,7 @@ export default function Dashboard() {
         Catat Latihan Hari Ini
       </button>
 
-      {todaySessions.length > 0 && (
-        <div className="mb-4">
-          <div className="section-header" style={{ marginBottom: 10 }}>
-            <h2 style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: 6 }}><CalendarDays size={16} /> Hari Ini</h2>
-            <span className="badge badge-green">{todaySessions.length} sesi</span>
-          </div>
-          {todaySessions.map(s => (
-            <TodaySessionCard
-              key={s.id}
-              session={s}
-              library={library}
-              onUpdateProgress={setUpdateSession}
-            />
-          ))}
-        </div>
-      )}
+
 
       <div className="card mb-4">
         <div className="section-header">
@@ -373,7 +251,15 @@ export default function Dashboard() {
                   <span style={{ width: calExpanded ? 4 : 3, height: calExpanded ? 4 : 3, borderRadius: '50%', background: 'var(--accent)', position: 'absolute', bottom: calExpanded ? 3 : 2 }} />
                 )}
                 {hasNote && (
-                  <span style={{ width: calExpanded ? 4 : 3, height: calExpanded ? 4 : 3, borderRadius: '50%', background: 'var(--text-muted)', position: 'absolute', bottom: calExpanded ? 3 : 2, right: calExpanded ? 3 : 2 }} />
+                  <span style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '15%',
+                    width: '70%',
+                    height: 2,
+                    borderRadius: 1,
+                    background: 'var(--text-muted)',
+                  }} />
                 )}
               </div>
             )

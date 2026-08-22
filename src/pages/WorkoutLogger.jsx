@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap } from 'lucide-react'
+import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap, CalendarDays } from 'lucide-react'
 import UpdateProgressModal from '../components/UpdateProgressModal'
 import QuickEditModal from '../components/QuickEditModal'
 import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
@@ -250,7 +250,7 @@ function SessionCard({ session, library, workouts, onUpdateProgress, onDelete })
                         textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'center',
                       }}>
                         <span>Set</span>
-                        <span>{ex.unit === 'BW' ? 'Reps' : ex.unit === 'SEC' ? 'Detik' : `Berat`}</span>
+                        <span>{ex.unit === 'BW' ? 'Reps' : ex.unit === 'SEC' ? 'Detik' : 'Berat'}</span>
                         <span>{ex.unit === 'BW' || ex.unit === 'SEC' ? '—' : 'Reps'}</span>
                       </div>
                       {ex.sets.map((s, idx) => (
@@ -287,10 +287,11 @@ export default function WorkoutLogger() {
   const { workouts, setWorkouts } = useWorkouts()
   const { library, setLibrary }   = useExerciseLibrary()
 
-  const [showAddExercise, setShowAddExercise] = useState(false)
-  const [updateSession, setUpdateSession]     = useState(null)
-  const [expandedCat, setExpandedCat]         = useState(null)
-  const [editExercise, setEditExercise]       = useState(null)
+  const [showAddExercise, setShowAddExercise]   = useState(false)
+  const [updateSession, setUpdateSession]       = useState(null)
+  const [expandedCat, setExpandedCat]           = useState(null)
+  const [editExercise, setEditExercise]         = useState(null)
+  const [showTodayHistory, setShowTodayHistory] = useState(false)
 
   const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))
   const deleteSession  = (id) => setWorkouts(prev => prev.filter(w => w.id !== id))
@@ -299,6 +300,17 @@ export default function WorkoutLogger() {
     if (!confirm('Hapus gerakan ini dari library?')) return
     setLibrary(prev => prev.filter(ex => ex.id !== exId))
   }
+
+  const todayKey = (() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  })()
+
+  const todaySessions = sorted.filter(w => {
+    const d = new Date(w.date)
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+    return key === todayKey
+  })
 
   const catCounts = {}
   ALL_CATS.forEach(cat => {
@@ -407,9 +419,7 @@ export default function WorkoutLogger() {
                           <div
                             key={ex.id}
                             className="exercise-row-item"
-                            style={{
-                              animationDelay: `${idx * 0.04}s`,
-                            }}
+                            style={{ animationDelay: `${idx * 0.04}s` }}
                           >
                             <div style={{
                               width: 6, height: 6, borderRadius: '50%',
@@ -496,6 +506,48 @@ export default function WorkoutLogger() {
           )
         })}
       </div>
+
+      {todaySessions.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div
+            onClick={() => setShowTodayHistory(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '12px 14px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: showTodayHistory ? '6px 6px 0 0' : '6px',
+              cursor: 'pointer',
+            }}
+          >
+            <CalendarDays size={16} color="var(--accent)" />
+            <span style={{ fontWeight: 500, fontSize: '14px', flex: 1 }}>Riwayat Hari Ini</span>
+            <span className="badge badge-green" style={{ marginRight: 4 }}>{todaySessions.length} sesi</span>
+            {showTodayHistory ? <ChevronUp size={16} color="var(--text-muted)" /> : <ChevronDown size={16} color="var(--text-muted)" />}
+          </div>
+
+          {showTodayHistory && (
+            <div style={{
+              border: '1px solid var(--border)',
+              borderTop: 'none',
+              borderRadius: '0 0 6px 6px',
+              padding: '10px 10px 4px',
+              background: 'var(--bg-card)',
+            }}>
+              {todaySessions.map(session => (
+                <SessionCard
+                  key={session.id}
+                  session={session}
+                  library={library}
+                  workouts={workouts}
+                  onUpdateProgress={setUpdateSession}
+                  onDelete={deleteSession}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {showAddExercise && (
         <AddExerciseModal
