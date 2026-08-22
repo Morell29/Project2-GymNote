@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { X, Check, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Calendar } from 'lucide-react'
-import { useWorkouts } from '../hooks/useStorage'
 import { generateId } from '../utils/workoutUtils'
 
 const CATS = [
@@ -11,8 +10,7 @@ const CATS = [
   { key: 'Others',      Icon: Zap,             label: 'Others',      colorVar: '--others-color', bgVar: '--others-bg' },
 ]
 
-export default function QuickLogModal({ onClose, onLogged }) {
-  const { setWorkouts } = useWorkouts()
+export default function QuickLogModal({ onClose, onLogged, setWorkouts }) {
   const [selectedCat, setSelectedCat] = useState(null)
 
   const today = new Date()

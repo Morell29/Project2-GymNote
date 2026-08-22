@@ -109,7 +109,11 @@ export default function Settings() {
             <input
               type="checkbox"
               checked={settings.darkMode || false}
-              onChange={() => setSettings(s => ({ ...s, darkMode: !s.darkMode }))}
+              onChange={() => {
+                const next = !settings.darkMode
+                setSettings(s => ({ ...s, darkMode: next }))
+                document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light')
+              }}
             />
             <span className="toggle-slider" />
           </label>

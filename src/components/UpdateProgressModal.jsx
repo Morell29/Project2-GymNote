@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { X, Plus, Trash2, Check, ChevronDown, ChevronUp, SkipForward, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap } from 'lucide-react'
-import { useWorkouts } from '../hooks/useStorage'
 import { generateId } from '../utils/workoutUtils'
 
 const CAT_META = {
@@ -11,8 +10,7 @@ const CAT_META = {
   'Others':      { Icon: Zap,             color: 'var(--others-color)', bg: 'var(--others-bg)' },
 }
 
-export default function UpdateProgressModal({ session, library, onClose }) {
-  const { setWorkouts } = useWorkouts()
+export default function UpdateProgressModal({ session, library, onClose, setWorkouts }) {
 
   const category = session.category || session.name
   const meta = CAT_META[category] || { Icon: Dumbbell, color: 'var(--accent)', bg: 'var(--accent-glow-sm)' }

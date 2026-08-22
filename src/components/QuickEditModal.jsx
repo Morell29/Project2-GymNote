@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { X, Plus, Trash2, Check, BarChart2, Trophy } from 'lucide-react'
-import { useWorkouts } from '../hooks/useStorage'
 import { generateId, getMaxWeight } from '../utils/workoutUtils'
 
-export default function QuickEditModal({ exercise, workouts, onClose }) {
-  const { setWorkouts } = useWorkouts()
+export default function QuickEditModal({ exercise, workouts, onClose, setWorkouts }) {
   const unit = exercise.defaultUnit || 'KG'
   const isBW  = unit === 'BW'
   const isSEC = unit === 'SEC'

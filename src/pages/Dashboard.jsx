@@ -72,7 +72,7 @@ function TrendLabel({ trend, weight, prevWeight, unit }) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { workouts } = useWorkouts()
+  const { workouts, setWorkouts } = useWorkouts()
   const { library } = useExerciseLibrary()
   const { settings } = useSettings()
   const { calNotes, setNote } = useCalNotes()
@@ -429,6 +429,7 @@ export default function Dashboard() {
         <QuickLogModal
           onClose={() => setShowQuickLog(false)}
           onLogged={handleLogged}
+          setWorkouts={setWorkouts}
         />
       )}
 
@@ -437,6 +438,7 @@ export default function Dashboard() {
           session={updateSession}
           library={library}
           onClose={() => setUpdateSession(null)}
+          setWorkouts={setWorkouts}
         />
       )}
 
@@ -445,6 +447,7 @@ export default function Dashboard() {
           exercise={editExercise}
           workouts={workouts}
           onClose={() => setEditExercise(null)}
+          setWorkouts={setWorkouts}
         />
       )}
     </div>
