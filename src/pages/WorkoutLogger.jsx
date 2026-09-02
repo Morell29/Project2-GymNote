@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap, CalendarDays } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap, CalendarDays, GripVertical } from 'lucide-react'
 import UpdateProgressModal from '../components/UpdateProgressModal'
 import QuickEditModal from '../components/QuickEditModal'
 import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
@@ -292,6 +292,8 @@ export default function WorkoutLogger() {
   const [expandedCat, setExpandedCat]           = useState(null)
   const [editExercise, setEditExercise]         = useState(null)
   const [showTodayHistory, setShowTodayHistory] = useState(false)
+  const dragIdx     = useRef(null)
+  const dragOverIdx = useRef(null)
 
   const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))
   const deleteSession  = (id) => setWorkouts(prev => prev.filter(w => w.id !== id))
@@ -299,6 +301,18 @@ export default function WorkoutLogger() {
   const deleteExercise = (exId) => {
     if (!confirm('Hapus gerakan ini dari library?')) return
     setLibrary(prev => prev.filter(ex => ex.id !== exId))
+  }
+
+  const reorderExercise = (cat, fromIdx, toIdx) => {
+    if (fromIdx === toIdx) return
+    setLibrary(prev => {
+      const catItems = prev.filter(ex => ex.category === cat)
+      const others   = prev.filter(ex => ex.category !== cat)
+      const moved = [...catItems]
+      const [item] = moved.splice(fromIdx, 1)
+      moved.splice(toIdx, 0, item)
+      return [...others, ...moved]
+    })
   }
 
   const todayKey = (() => {
@@ -420,11 +434,22 @@ export default function WorkoutLogger() {
                             key={ex.id}
                             className="exercise-row-item"
                             style={{ animationDelay: `${idx * 0.04}s` }}
+                            draggable
+                            onDragStart={() => { dragIdx.current = idx }}
+                            onDragEnter={() => { dragOverIdx.current = idx }}
+                            onDragOver={e => e.preventDefault()}
+                            onDrop={() => {
+                              reorderExercise(expandedCat, dragIdx.current, dragOverIdx.current)
+                              dragIdx.current = null
+                              dragOverIdx.current = null
+                            }}
                           >
-                            <div style={{
-                              width: 6, height: 6, borderRadius: '50%',
-                              background: meta.color, opacity: 0.5, flexShrink: 0,
-                            }} />
+                            <span
+                              style={{ color: 'var(--text-muted)', display: 'flex', cursor: 'grab', flexShrink: 0, touchAction: 'none' }}
+                              onMouseDown={e => e.stopPropagation()}
+                            >
+                              <GripVertical size={16} />
+                            </span>
 
                             <div style={{ flex: 1 }}>
                               <div style={{ fontWeight: 500, fontSize: '14px' }}>{ex.name}</div>

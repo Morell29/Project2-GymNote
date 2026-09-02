@@ -1106,7 +1106,7 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
   padding: 11px 14px 11px 24px;
   margin-left: 20px;
   border-left: 2px solid var(--border);
-  cursor: pointer;
+  cursor: default;
   transition: background 0.2s ease, border-color 0.2s ease;
   animation: fadeInUp 0.3s ease both;
 }
@@ -1116,4 +1116,7 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 }
 .exercise-row-item:last-child {
   border-bottom-left-radius: var(--radius-sm);
+}
+.exercise-row-item[draggable]:active {
+  opacity: 0.5;
 }
