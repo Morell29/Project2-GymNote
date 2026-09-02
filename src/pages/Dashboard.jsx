@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy } from 'lucide-react'
+import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy, X } from 'lucide-react'
 import { useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
 import { getMaxWeight, getMaxReps, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
@@ -74,6 +74,128 @@ function TrendLabel({ trend, weight, prevWeight, unit, repsTrend }) {
   return <span className="trend-same" style={{ fontSize: '12px', fontWeight: 500 }}>Sama</span>
 }
 
+function CalendarModal({ calMonthLabel, calGrid, calNotes, streak, monthWorkoutCount, onClose, onPrevMonth, onNextMonth, openNote }) {
+  const touchStartX = useRef(null)
+
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX }
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) < 40) return
+    if (diff > 0) onNextMonth()
+    else onPrevMonth()
+    touchStartX.current = null
+  }
+
+  return (
+    <div
+      onClick={e => e.target === e.currentTarget && onClose()}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.45)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        zIndex: 300,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        animation: 'fadeIn 0.2s ease',
+      }}
+    >
+      <div
+        style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: 20,
+          padding: '24px 20px 20px',
+          width: 'calc(100% - 32px)',
+          maxWidth: 480,
+          animation: 'fadeIn 0.2s ease',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <button onClick={onPrevMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
+            <ChevronLeft size={18} />
+          </button>
+          <h2 style={{ fontSize: '15px', textTransform: 'capitalize', fontWeight: 600 }}>{calMonthLabel}</h2>
+          <button onClick={onNextMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
+            <ChevronRight size={18} />
+          </button>
+          <button onClick={onClose} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6, marginLeft: 4 }}>
+            <Minimize2 size={14} />
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, textAlign: 'center' }}>
+          {['M','S','S','R','K','J','S'].map((d, i) => (
+            <div key={i} style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-muted)', padding: '4px 0' }}>{d}</div>
+          ))}
+          {calGrid.map((cell, i) => {
+            const hasNote = cell && !!calNotes[cell.key]
+            return (
+              <div
+                key={i}
+                onClick={() => { openNote(cell); onClose() }}
+                style={{
+                  aspectRatio: '1',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: cell?.isToday ? 700 : 400,
+                  color: cell ? (cell.isToday ? 'var(--accent)' : 'var(--text-primary)') : 'transparent',
+                  background: cell?.hasWorkout ? 'var(--accent-glow-sm)' : 'transparent',
+                  border: cell?.isToday ? '1.5px solid var(--accent)' : '1.5px solid transparent',
+                  position: 'relative',
+                  cursor: cell ? 'pointer' : 'default',
+                }}
+              >
+                {cell ? cell.day : ''}
+                {cell?.hasWorkout && (
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', position: 'absolute', bottom: 4 }} />
+                )}
+                {hasNote && (
+                  <span style={{ position: 'absolute', bottom: 0, left: '15%', width: '70%', height: 2, borderRadius: 1, background: 'var(--text-muted)' }} />
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+          <span style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'var(--accent-glow-sm)', border: '1px solid var(--border-accent)',
+            borderRadius: 20, padding: '5px 12px', fontSize: '12px', fontWeight: 600,
+            color: 'var(--accent)',
+          }}>
+            <Calendar size={12} /> {monthWorkoutCount} sesi bulan ini
+          </span>
+          {streak > 0 && (
+            <span style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)',
+              borderRadius: 20, padding: '5px 12px', fontSize: '12px', fontWeight: 600,
+              color: '#d97706',
+            }}>
+              <Flame size={12} color="#f97316" /> {streak} hari streak
+            </span>
+          )}
+        </div>
+
+        <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', marginTop: 14, opacity: 0.6 }}>
+          Swipe kiri/kanan untuk ganti bulan
+        </p>
+      </div>
+    </div>
+  )
+}
+
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -105,6 +227,9 @@ export default function Dashboard() {
   const today = new Date()
   const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
   const calMonthLabel = new Date(calYear, calMon).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+
+  const monthPrefix = `${calYear}-${String(calMon+1).padStart(2,'0')}`
+  const monthWorkoutCount = [...workoutDays].filter(d => d.startsWith(monthPrefix)).length
 
   const calGrid = []
   for (let i = 0; i < firstDayOfWeek; i++) calGrid.push(null)
@@ -221,14 +346,14 @@ export default function Dashboard() {
             onClick={() => setCalExpanded(v => !v)}
             className="btn btn-ghost btn-icon btn-sm"
             style={{ padding: 6, marginLeft: 2 }}
-            title={calExpanded ? 'Perkecil' : 'Perbesar'}
+            title="Perbesar"
           >
-            {calExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            <Maximize2 size={14} />
           </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: calExpanded ? 4 : 2, textAlign: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, textAlign: 'center' }}>
           {['M','S','S','R','K','J','S'].map((d, i) => (
-            <div key={i} style={{ fontSize: '10px', fontWeight: 500, color: 'var(--text-muted)', padding: calExpanded ? '4px 0' : '2px 0' }}>{d}</div>
+            <div key={i} style={{ fontSize: '10px', fontWeight: 500, color: 'var(--text-muted)', padding: '2px 0' }}>{d}</div>
           ))}
           {calGrid.map((cell, i) => {
             const hasNote = cell && !!calNotes[cell.key]
@@ -237,14 +362,13 @@ export default function Dashboard() {
                 key={i}
                 onClick={() => openNote(cell)}
                 style={{
-                  height: calExpanded ? undefined : 28,
-                  aspectRatio: calExpanded ? '1' : undefined,
+                  height: 28,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  borderRadius: calExpanded ? '6px' : '4px',
-                  fontSize: calExpanded ? '13px' : '11px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
                   fontWeight: cell?.isToday ? 600 : 400,
                   color: cell ? (cell.isToday ? 'var(--accent)' : 'var(--text-primary)') : 'transparent',
                   background: cell?.hasWorkout ? 'var(--accent-glow-sm)' : 'transparent',
@@ -255,7 +379,7 @@ export default function Dashboard() {
               >
                 {cell ? cell.day : ''}
                 {cell?.hasWorkout && (
-                  <span style={{ width: calExpanded ? 4 : 3, height: calExpanded ? 4 : 3, borderRadius: '50%', background: 'var(--accent)', position: 'absolute', bottom: calExpanded ? 3 : 2 }} />
+                  <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--accent)', position: 'absolute', bottom: 2 }} />
                 )}
                 {hasNote && (
                   <span style={{
@@ -274,10 +398,26 @@ export default function Dashboard() {
         </div>
         {streak > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
-            <span className="badge badge-yellow">{streak} hari streak</span>
+            <span className="badge badge-yellow" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '11px' }}>
+              <Flame size={11} color="#f97316" /> Streak · <strong>{streak}</strong> hari
+            </span>
           </div>
         )}
       </div>
+
+      {calExpanded && (
+        <CalendarModal
+          calMonthLabel={calMonthLabel}
+          calGrid={calGrid}
+          calNotes={calNotes}
+          streak={streak}
+          monthWorkoutCount={monthWorkoutCount}
+          onClose={() => setCalExpanded(false)}
+          onPrevMonth={prevMonth}
+          onNextMonth={nextMonth}
+          openNote={openNote}
+        />
+      )}
 
       {noteTarget && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && saveNote()}>
