@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, Plus, Trash2, Check, BarChart2, Trophy, Pencil } from 'lucide-react'
-import { generateId, getMaxWeight } from '../utils/workoutUtils'
+import { generateId, getMaxWeight, getMaxReps } from '../utils/workoutUtils'
 
 const UNITS = ['KG', 'BAR', 'BW', 'SEC']
 
@@ -70,7 +70,12 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
   }
 
   const currentMax = Math.max(...sets.map(s => parseFloat(s.weight) || 0))
-  const isNewPR    = lastMax !== null && currentMax > lastMax
+  const currentMaxReps = Math.max(...sets.map(s => parseInt(s.reps) || 0))
+  const lastMaxReps = lastEntry ? getMaxReps(lastEntry) : null
+  const isNewPR = lastMax !== null && (
+    currentMax > lastMax ||
+    (currentMax === lastMax && lastMaxReps !== null && currentMaxReps > lastMaxReps)
+  )
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>

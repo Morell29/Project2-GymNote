@@ -35,6 +35,13 @@ export function getMaxWeight(exerciseEntry) {
 }
 
 /**
+ * Get max reps from an exercise entry (across sets with same max weight)
+ */
+export function getMaxReps(exerciseEntry) {
+  return Math.max(...exerciseEntry.sets.map(s => parseInt(s.reps) || 0))
+}
+
+/**
  * Compare current exercise with last session
  * Returns { direction: 'up'|'down'|'same', diff, label }
  */

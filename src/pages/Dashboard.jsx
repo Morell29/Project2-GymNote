@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy } from 'lucide-react'
 import { useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
-import { getMaxWeight, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
+import { getMaxWeight, getMaxReps, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
 import QuickLogModal from '../components/QuickLogModal'
 import UpdateProgressModal from '../components/UpdateProgressModal'
@@ -36,21 +36,25 @@ function getLastWeight(workouts, exerciseId) {
     .filter(w => w.exercises.some(e => e.exerciseId === exerciseId))
     .sort((a, b) => new Date(b.date) - new Date(a.date))
 
-  if (!sessions.length) return { weight: null, unit: 'KG', trend: null, prevWeight: null }
+  if (!sessions.length) return { weight: null, unit: 'KG', trend: null, prevWeight: null, repsTrend: null }
 
   const latest = sessions[0].exercises.find(e => e.exerciseId === exerciseId)
   const latestMax = getMaxWeight(latest)
+  const latestMaxReps = getMaxReps(latest)
   const unit = latest.unit || 'KG'
 
-  if (sessions.length < 2) return { weight: latestMax, unit, trend: 'new', prevWeight: null }
+  if (sessions.length < 2) return { weight: latestMax, unit, trend: 'new', prevWeight: null, repsTrend: null }
 
   const prev = sessions[1].exercises.find(e => e.exerciseId === exerciseId)
   const prevMax = getMaxWeight(prev)
+  const prevMaxReps = getMaxReps(prev)
   let trend = 'same'
+  let repsTrend = null
   if (latestMax > prevMax) trend = 'up'
   else if (latestMax < prevMax) trend = 'down'
+  else if (latestMaxReps > prevMaxReps) repsTrend = latestMaxReps - prevMaxReps
 
-  return { weight: latestMax, unit, trend, prevWeight: prevMax }
+  return { weight: latestMax, unit, trend, prevWeight: prevMax, repsTrend }
 }
 
 function TrendIcon({ trend }) {
@@ -60,12 +64,13 @@ function TrendIcon({ trend }) {
   return <Minus size={13} className="trend-same" />
 }
 
-function TrendLabel({ trend, weight, prevWeight, unit }) {
+function TrendLabel({ trend, weight, prevWeight, unit, repsTrend }) {
   if (trend === 'new')  return <span className="trend-new" style={{ fontSize: '12px', fontWeight: 500 }}>Pertama!</span>
   if (!prevWeight)      return null
   const diff = weight - prevWeight
   if (trend === 'up')   return <span className="trend-up"   style={{ fontSize: '12px', fontWeight: 500 }}>+{diff} {unit}</span>
   if (trend === 'down') return <span className="trend-down" style={{ fontSize: '12px', fontWeight: 500 }}>{diff} {unit}</span>
+  if (repsTrend)        return <span className="trend-up"   style={{ fontSize: '12px', fontWeight: 500 }}>+{repsTrend} reps</span>
   return <span className="trend-same" style={{ fontSize: '12px', fontWeight: 500 }}>Sama</span>
 }
 
@@ -135,7 +140,9 @@ export default function Dashboard() {
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
       ?.exercises.find(e => e.exerciseId === ex.exerciseId)
     if (!prev) return false
-    return getMaxWeight(ex) > getMaxWeight(prev)
+    if (getMaxWeight(ex) > getMaxWeight(prev)) return true
+    if (getMaxWeight(ex) === getMaxWeight(prev) && getMaxReps(ex) > getMaxReps(prev)) return true
+    return false
   }).length || 0
 
   const activeCat = CATEGORIES.find(c => c.key === activeTab)
@@ -363,7 +370,7 @@ export default function Dashboard() {
           </div>
         ) : (
           catExercises.map(ex => {
-            const { weight, unit, trend, prevWeight } = getLastWeight(workouts, ex.id)
+            const { weight, unit, trend, prevWeight, repsTrend } = getLastWeight(workouts, ex.id)
             return (
               <div
                 key={ex.id}
@@ -373,13 +380,13 @@ export default function Dashboard() {
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="overload-row-name">{ex.name}</div>
-                  {trend && (
+                  {(trend || repsTrend) && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                      <TrendIcon trend={trend} />
-                      <TrendLabel trend={trend} weight={weight} prevWeight={prevWeight} unit={unit} />
+                      <TrendIcon trend={repsTrend && trend === 'same' ? 'up' : trend} />
+                      <TrendLabel trend={trend} weight={weight} prevWeight={prevWeight} unit={unit} repsTrend={repsTrend} />
                     </div>
                   )}
-                  {!trend && (
+                  {!trend && !repsTrend && (
                     <div className="text-xs text-muted" style={{ marginTop: 2 }}>Tap untuk mulai catat</div>
                   )}
                 </div>
