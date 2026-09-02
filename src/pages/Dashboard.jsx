@@ -73,7 +73,7 @@ function TrendLabel({ trend, weight, prevWeight, unit }) {
 export default function Dashboard() {
   const navigate = useNavigate()
   const { workouts, setWorkouts } = useWorkouts()
-  const { library } = useExerciseLibrary()
+  const { library, setLibrary } = useExerciseLibrary()
   const { settings } = useSettings()
   const { calNotes, setNote } = useCalNotes()
 
@@ -448,6 +448,7 @@ export default function Dashboard() {
           workouts={workouts}
           onClose={() => setEditExercise(null)}
           setWorkouts={setWorkouts}
+          setLibrary={setLibrary}
         />
       )}
     </div>

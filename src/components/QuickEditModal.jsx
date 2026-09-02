@@ -1,9 +1,16 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, Check, BarChart2, Trophy } from 'lucide-react'
+import { X, Plus, Trash2, Check, BarChart2, Trophy, Pencil } from 'lucide-react'
 import { generateId, getMaxWeight } from '../utils/workoutUtils'
 
-export default function QuickEditModal({ exercise, workouts, onClose, setWorkouts }) {
-  const unit = exercise.defaultUnit || 'KG'
+const UNITS = ['KG', 'BAR', 'BW', 'SEC']
+
+export default function QuickEditModal({ exercise, workouts, onClose, setWorkouts, setLibrary }) {
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState(exercise.name)
+  const [editUnit, setEditUnit] = useState(exercise.defaultUnit || 'KG')
+  const [currentName, setCurrentName] = useState(exercise.name)
+  const [unit, setUnit] = useState(exercise.defaultUnit || 'KG')
+
   const isBW  = unit === 'BW'
   const isSEC = unit === 'SEC'
 
@@ -29,6 +36,16 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
   const removeSet = (id) => setSets(p => p.length > 1 ? p.filter(s => s.id !== id) : p)
   const updateSet = (id, field, val) =>
     setSets(p => p.map(s => s.id === id ? { ...s, [field]: val } : s))
+
+  const handleSaveEdit = () => {
+    if (!editName.trim()) return
+    setLibrary(prev => prev.map(ex =>
+      ex.id === exercise.id ? { ...ex, name: editName.trim(), defaultUnit: editUnit } : ex
+    ))
+    setCurrentName(editName.trim())
+    setUnit(editUnit)
+    setEditing(false)
+  }
 
   const handleSave = () => {
     const validSets = sets.filter(s => s.weight !== '' || s.reps !== '')
@@ -62,13 +79,56 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
 
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h2 style={{ fontSize: '18px', marginBottom: 3 }}>{exercise.name}</h2>
+            <h2 style={{ fontSize: '18px', marginBottom: 3 }}>{currentName}</h2>
             <p className="text-xs text-muted">{exercise.category} · {unit}</p>
           </div>
-          <button className="btn btn-ghost btn-icon btn-sm" id="btn-close-quickedit" onClick={onClose}>
-            <X size={18} />
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setEditing(true)}>
+              <Pencil size={16} />
+            </button>
+            <button className="btn btn-ghost btn-icon btn-sm" id="btn-close-quickedit" onClick={onClose}>
+              <X size={18} />
+            </button>
+          </div>
         </div>
+
+        {editing && (
+          <div style={{ background: 'var(--bg-card-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px', marginBottom: 12 }}>
+            <p className="text-xs text-muted" style={{ marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Edit Gerakan</p>
+            <input
+              className="set-input"
+              style={{ width: '100%', marginBottom: 8 }}
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              placeholder="Nama gerakan"
+            />
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              {UNITS.map(u => (
+                <button
+                  key={u}
+                  onClick={() => setEditUnit(u)}
+                  style={{
+                    flex: 1,
+                    padding: '6px 0',
+                    borderRadius: 6,
+                    border: '1px solid var(--border)',
+                    background: editUnit === u ? 'var(--accent)' : 'var(--bg-card)',
+                    color: editUnit === u ? '#fff' : 'var(--text-primary)',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {u}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => setEditing(false)}>Batal</button>
+              <button className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={handleSaveEdit}><Check size={14} /> Simpan</button>
+            </div>
+          </div>
+        )}
 
         {lastMax !== null && lastMax > 0 && (
           <div
