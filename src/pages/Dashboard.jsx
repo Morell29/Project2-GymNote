@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy, X } from 'lucide-react'
-import { useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
+import { useLocalStorage, useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
 import { getMaxWeight, getMaxReps, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
 import QuickLogModal from '../components/QuickLogModal'
@@ -204,7 +204,7 @@ export default function Dashboard() {
   const { settings } = useSettings()
   const { calNotes, setNote } = useCalNotes()
 
-  const [activeTab, setActiveTab]           = useState('Push')
+  const [activeTab, setActiveTab]           = useLocalStorage('gymNote_activeTab', 'Push')
   const [showExport, setShowExport]         = useState(false)
   const [showQuickLog, setShowQuickLog]     = useState(false)
   const [updateSession, setUpdateSession]   = useState(null)
