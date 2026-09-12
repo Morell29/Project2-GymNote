@@ -70,7 +70,8 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
   }
 
   const currentMax = Math.max(...sets.map(s => parseFloat(s.weight) || 0))
-  const currentMaxReps = Math.max(...sets.map(s => parseInt(s.reps) || 0))
+  const topSets = sets.filter(s => (parseFloat(s.weight) || 0) === currentMax)
+  const currentMaxReps = Math.max(...topSets.map(s => parseInt(s.reps) || 0))
   const lastMaxReps = lastEntry ? getMaxReps(lastEntry) : null
   const isNewPR = lastMax !== null && (
     currentMax > lastMax ||

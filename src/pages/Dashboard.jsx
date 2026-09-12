@@ -463,7 +463,7 @@ export default function Dashboard() {
           <span
             className="text-xs text-muted"
             style={{ cursor: 'pointer' }}
-            onClick={() => navigate('/workout')}
+            onClick={() => navigate('/history')}
           >
             Riwayat <ChevronRight size={12} style={{ display: 'inline', verticalAlign: 'middle' }} />
           </span>

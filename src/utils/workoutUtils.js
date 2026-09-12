@@ -38,7 +38,9 @@ export function getMaxWeight(exerciseEntry) {
  * Get max reps from an exercise entry (across sets with same max weight)
  */
 export function getMaxReps(exerciseEntry) {
-  return Math.max(...exerciseEntry.sets.map(s => parseInt(s.reps) || 0))
+  const maxW = getMaxWeight(exerciseEntry)
+  const topSets = exerciseEntry.sets.filter(s => (parseFloat(s.weight) || 0) === maxW)
+  return Math.max(...topSets.map(s => parseInt(s.reps) || 0))
 }
 
 /**
