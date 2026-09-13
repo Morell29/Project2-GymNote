@@ -96,7 +96,6 @@ export function useCalNotes() {
 export function useSettings() {
   const [settings, setSettings] = useLocalStorage('gymNote_settings', {
     username: 'Athlete',
-    defaultRestSeconds: 90,
     darkMode: false,
   })
   return { settings, setSettings }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, Upload, Trash2, User, Clock, Sun, Moon, Settings2, Package, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import { Download, Upload, Trash2, User, Sun, Moon, Settings2, Package, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
 import { useSettings, useWorkouts, useExerciseLibrary, useTemplates } from '../hooks/useStorage'
 
 export default function Settings() {
@@ -58,8 +58,6 @@ export default function Settings() {
     }
   }
 
-  const REST_OPTIONS = [30, 60, 90, 120, 180]
-
   return (
     <div className="page">
       <div className="page-header">
@@ -117,34 +115,6 @@ export default function Settings() {
             />
             <span className="toggle-slider" />
           </label>
-        </div>
-      </div>
-
-      <div className="card mb-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div style={{
-            width: 42, height: 42, borderRadius: '50%',
-            background: 'rgba(58, 123, 213, 0.08)',
-            border: '1px solid rgba(58, 123, 213, 0.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Clock size={20} color="#3a7bd5" />
-          </div>
-          <div>
-            <h2>Rest Timer Default</h2>
-            <p className="text-xs text-muted">Durasi istirahat default saat selesai 1 set</p>
-          </div>
-        </div>
-        <div className="unit-toggle" style={{ maxWidth: '100%' }}>
-          {REST_OPTIONS.map(s => (
-            <button
-              key={s}
-              className={settings.defaultRestSeconds === s ? 'active' : ''}
-              onClick={() => setSettings(st => ({ ...st, defaultRestSeconds: s }))}
-            >
-              {s >= 60 ? `${s/60}m` : `${s}s`}
-            </button>
-          ))}
         </div>
       </div>
 
