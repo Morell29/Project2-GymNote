@@ -36,14 +36,15 @@ function getLastWeight(workouts, exerciseId) {
     .filter(w => w.exercises.some(e => e.exerciseId === exerciseId))
     .sort((a, b) => new Date(b.date) - new Date(a.date))
 
-  if (!sessions.length) return { weight: null, unit: 'KG', trend: null, prevWeight: null, repsTrend: null }
+  if (!sessions.length) return { weight: null, unit: 'KG', trend: null, prevWeight: null, repsTrend: null, readyUp: false }
 
   const latest = sessions[0].exercises.find(e => e.exerciseId === exerciseId)
   const latestMax = getMaxWeight(latest)
   const latestMaxReps = getMaxReps(latest)
   const unit = latest.unit || 'KG'
+  const readyUp = latestMaxReps >= 12 && unit !== 'BW' && unit !== 'SEC'
 
-  if (sessions.length < 2) return { weight: latestMax, unit, trend: 'new', prevWeight: null, repsTrend: null }
+  if (sessions.length < 2) return { weight: latestMax, unit, trend: 'new', prevWeight: null, repsTrend: null, readyUp }
 
   const prev = sessions[1].exercises.find(e => e.exerciseId === exerciseId)
   const prevMax = getMaxWeight(prev)
@@ -54,7 +55,7 @@ function getLastWeight(workouts, exerciseId) {
   else if (latestMax < prevMax) trend = 'down'
   else if (latestMaxReps > prevMaxReps) repsTrend = latestMaxReps - prevMaxReps
 
-  return { weight: latestMax, unit, trend, prevWeight: prevMax, repsTrend }
+  return { weight: latestMax, unit, trend, prevWeight: prevMax, repsTrend, readyUp }
 }
 
 function TrendIcon({ trend }) {
@@ -510,16 +511,19 @@ export default function Dashboard() {
           </div>
         ) : (
           catExercises.map(ex => {
-            const { weight, unit, trend, prevWeight, repsTrend } = getLastWeight(workouts, ex.id)
+            const { weight, unit, trend, prevWeight, repsTrend, readyUp } = getLastWeight(workouts, ex.id)
             return (
               <div
                 key={ex.id}
                 className="overload-row"
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', position: 'relative' }}
                 onClick={() => setEditExercise(ex)}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="overload-row-name">{ex.name}</div>
+                  <div className="overload-row-name" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    {ex.name}
+                    {readyUp && <Flame size={14} color="#f97316" title="Siap naikkan beban!" />}
+                  </div>
                   {(trend || repsTrend) && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
                       <TrendIcon trend={repsTrend && trend === 'same' ? 'up' : trend} />
