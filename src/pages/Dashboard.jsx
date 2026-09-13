@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, Trophy, X } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, X } from 'lucide-react'
 import { useLocalStorage, useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
 import { getMaxWeight, getMaxReps, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
@@ -217,7 +217,6 @@ export default function Dashboard() {
   const noteInputRef = useRef(null)
 
   const streak       = calculateStreak(workouts)
-  const totalSessions = workouts.length
 
   const workoutDays = getWorkoutDays(workouts)
 
@@ -256,21 +255,6 @@ export default function Dashboard() {
     if (noteTarget && noteInputRef.current) noteInputRef.current.focus()
   }, [noteTarget])
 
-  const lastAnySession = workouts.length
-    ? [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
-    : null
-
-  const prCount = lastAnySession?.exercises?.filter(ex => {
-    const prev = workouts
-      .filter(w => w.id !== lastAnySession.id && w.exercises.some(e => e.exerciseId === ex.exerciseId))
-      .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
-      ?.exercises.find(e => e.exerciseId === ex.exerciseId)
-    if (!prev) return false
-    if (getMaxWeight(ex) > getMaxWeight(prev)) return true
-    if (getMaxWeight(ex) === getMaxWeight(prev) && getMaxReps(ex) > getMaxReps(prev)) return true
-    return false
-  }).length || 0
-
   const activeCat = CATEGORIES.find(c => c.key === activeTab)
 
   const handleLogged = (session) => {
@@ -285,42 +269,7 @@ export default function Dashboard() {
 
       <div className="brand-header">G Y M N O T E</div>
 
-      <div className="greeting-card">
-        <p style={{ marginBottom: 4, color: 'var(--text-on-dark-secondary)', fontSize: '12px' }}>
-          Welcome back KING!!
-        </p>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h1 style={{ fontSize: '26px', fontWeight: 300, color: 'var(--text-on-dark)', letterSpacing: '-0.104px', display: 'flex', alignItems: 'center', gap: 8 }}>
-            {settings.username} <ArrowUpFromLine size={20} color="var(--accent)" />
-          </h1>
-          <button
-            className="btn btn-sm btn-icon"
-            id="btn-export"
-            onClick={() => setShowExport(true)}
-            style={{ border: '1.5px solid rgba(255,255,255,0.2)', color: 'var(--text-on-dark)', background: 'transparent', borderRadius: '6px' }}
-            title="Export Progress"
-          >
-            <Download size={17} />
-          </button>
-        </div>
 
-        <div style={{ display: 'flex', gap: 28 }}>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{streak}</div>
-            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Flame size={11} color="#f97316" /> Streak</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{totalSessions}</div>
-            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={11} /> Sesi</div>
-          </div>
-          {prCount > 0 && (
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--text-on-dark)', lineHeight: 1 }}>{prCount}</div>
-              <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-on-dark-secondary)', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><Trophy size={11} /> PR Baru</div>
-            </div>
-          )}
-        </div>
-      </div>
 
       <button
         className="btn btn-primary btn-full mb-4"
