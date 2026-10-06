@@ -283,7 +283,7 @@ export default function Dashboard() {
 
 
 
-      <div className="card mb-4">
+      <div className="card calendar-border-trail mb-4">
         <div className="section-header">
           <button onClick={prevMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
             <ChevronLeft size={16} />

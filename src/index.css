@@ -178,6 +178,45 @@ p  { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 
 .card:hover { border-color: var(--border-hover); }
 
+@property --calendar-trail-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.calendar-border-trail {
+  position: relative;
+}
+
+.calendar-border-trail::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--calendar-trail-angle),
+    transparent 0deg 280deg,
+    rgb(255 255 255 / 15%) 310deg,
+    white 350deg,
+    transparent 360deg
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: calendar-border-trail 6s linear infinite;
+}
+
+@keyframes calendar-border-trail {
+  to { --calendar-trail-angle: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-border-trail::after {
+    animation: none;
+  }
+}
+
 .card-accent {
   border-color: var(--border-accent);
 }
