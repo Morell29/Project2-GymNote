@@ -128,9 +128,14 @@ export function calculateStreak(workouts) {
   return streak
 }
 
-/**
- * Generate unique session ID
- */
+export function parseWorkoutDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  const date = new Date(`${value}T00:00:00`)
+  const [year, month, day] = value.split('-').map(Number)
+  if (year < 1 || date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) return null
+  return date
+}
+
 export function generateId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }

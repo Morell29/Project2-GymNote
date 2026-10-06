@@ -278,7 +278,7 @@ export default function Dashboard() {
         style={{ fontSize: '16px', padding: '16px 24px' }}
       >
         <Plus size={19} />
-        Catat Latihan Hari Ini
+        Catat Latihan
       </button>
 
 
