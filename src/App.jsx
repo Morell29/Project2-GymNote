@@ -19,6 +19,7 @@ function AppShell() {
       <Routes>
         <Route path="/"        element={<Dashboard />} />
         <Route path="/workout" element={<WorkoutLogger />} />
+        <Route path="/workout/:category" element={<WorkoutLogger />} />
         <Route path="/history" element={<History />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>

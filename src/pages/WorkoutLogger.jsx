@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
-import { Plus, X, ChevronDown, ChevronUp, Trash2, Pencil, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap, GripVertical } from 'lucide-react'
+import { Link, Navigate, useParams } from 'react-router-dom'
+import { Plus, X, ArrowLeft, ChevronRight, Trash2, Pencil, Dumbbell, ArrowUpFromLine, MoveDown, Activity, Zap, GripVertical } from 'lucide-react'
 import QuickEditModal from '../components/QuickEditModal'
 import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
 import { getMaxWeight } from '../utils/workoutUtils'
@@ -15,9 +16,9 @@ const CAT_META = {
   'Others':      { Icon: Zap,             color: 'var(--others-color)', bg: 'var(--others-bg)' },
 }
 
-function AddExerciseModal({ onClose, onAdded }) {
+function AddExerciseModal({ onClose, onAdded, initialCategory }) {
   const [name, setName]   = useState('')
-  const [cat, setCat]     = useState('Push')
+  const [cat, setCat]     = useState(initialCategory || 'Push')
   const [unit, setUnit]   = useState('KG')
   const [error, setError] = useState('')
 
@@ -112,7 +113,8 @@ export default function WorkoutLogger() {
   const { library, setLibrary }   = useExerciseLibrary()
 
   const [showAddExercise, setShowAddExercise]   = useState(false)
-  const [expandedCat, setExpandedCat]           = useState(null)
+  const { category } = useParams()
+  const selectedCat = ALL_CATS.find(cat => cat.toLowerCase().replace(/\s/g, '-') === category)
   const [editExercise, setEditExercise]         = useState(null)
   const dragIdx     = useRef(null)
   const dragOverIdx = useRef(null)
@@ -141,17 +143,26 @@ export default function WorkoutLogger() {
     catCounts[cat] = library.filter(ex => ex.category === cat).length
   })
 
-  const expandedExercises = expandedCat ? library.filter(ex => ex.category === expandedCat) : []
+  const categoryExercises = library.filter(ex => ex.category === selectedCat)
+  const meta = CAT_META[selectedCat]
+
+  if (category && !selectedCat) return <Navigate to="/workout" replace />
 
   return (
     <div className="page">
+      {selectedCat && (
+        <Link to="/workout" className="btn btn-ghost btn-sm" style={{ marginTop: 20, width: 'fit-content', gap: 6 }}>
+          <ArrowLeft size={16} /> Semua kategori
+        </Link>
+      )}
       <div className="page-header" style={{ paddingTop: 20 }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: '26px', fontWeight: 500, letterSpacing: '-0.104px', display: 'flex', alignItems: 'center', gap: 8 }}>
-            Latihan <Dumbbell size={22} color="var(--accent)" />
+            {selectedCat || 'Latihan'}
+            {selectedCat ? <meta.Icon size={22} color={meta.color} /> : <Dumbbell size={22} color="var(--accent)" />}
           </h1>
           <p className="text-sm text-muted" style={{ marginTop: 2 }}>
-            {library.length} gerakan tersimpan
+            {selectedCat ? categoryExercises.length : library.length} gerakan tersimpan
           </p>
         </div>
         <button
@@ -165,155 +176,112 @@ export default function WorkoutLogger() {
         </button>
       </div>
 
-      <div className="cat-list-vertical">
-        {ALL_CATS.map(cat => {
-          const meta       = CAT_META[cat]
-          const isExpanded = expandedCat === cat
-          const exCount    = catCounts[cat]
+      {!selectedCat ? (
+        <div className="cat-list-vertical">
+          {ALL_CATS.map(cat => {
+            const catMeta = CAT_META[cat]
+            const slug = cat.toLowerCase().replace(/\s/g, '-')
 
-          return (
-            <div key={cat}>
-              <div
-                className="cat-list-item"
-                id={`cat-${cat.toLowerCase().replace(/\s/g, '-')}`}
-                onClick={() => setExpandedCat(isExpanded ? null : cat)}
-                style={{
-                  borderColor: isExpanded ? meta.color : 'var(--border)',
-                  background: isExpanded ? meta.bg : 'var(--bg-card)',
-                }}
-              >
-                <div
-                  className="cat-icon"
-                  style={{
-                    background: meta.bg,
-                    border: `1px solid var(--border)`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  <meta.Icon size={18} color={meta.color} />
+            return (
+              <Link key={cat} to={`/workout/${slug}`} className="cat-list-item" id={`cat-${slug}`} style={{ textDecoration: 'none' }}>
+                <div className="cat-icon" style={{ background: catMeta.bg, border: '1px solid var(--border)' }}>
+                  <catMeta.Icon size={18} color={catMeta.color} />
                 </div>
                 <div className="cat-info">
-                  <div className="cat-name" style={{ color: isExpanded ? meta.color : 'var(--text-primary)' }}>
-                    {cat}
-                  </div>
-                  <div className="cat-count" style={{ color: isExpanded ? meta.color : 'var(--text-muted)' }}>
-                    {exCount} gerakan
-                  </div>
+                  <div className="cat-name" style={{ color: 'var(--text-primary)' }}>{cat}</div>
+                  <div className="cat-count">{catCounts[cat]} gerakan</div>
                 </div>
-                <div
-                  className="cat-arrow"
-                  style={{
-                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    color: isExpanded ? meta.color : 'var(--text-muted)',
-                  }}
+                <ChevronRight className="cat-arrow" size={18} />
+              </Link>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="category-exercises" style={{ marginBottom: 10 }}>
+          {categoryExercises.map((ex, idx) => {
+            const lastSession = sorted.find(w =>
+              w.exercises?.some(e => e.exerciseId === ex.id)
+            )
+            const lastEntry = lastSession?.exercises?.find(e => e.exerciseId === ex.id)
+            const maxW = lastEntry ? getMaxWeight(lastEntry) : null
+
+            return (
+              <div
+                key={ex.id}
+                className="exercise-row-item"
+                style={{ animationDelay: `${idx * 0.04}s` }}
+                draggable
+                onDragStart={() => { dragIdx.current = idx }}
+                onDragEnter={() => { dragOverIdx.current = idx }}
+                onDragOver={e => e.preventDefault()}
+                onDrop={() => {
+                  reorderExercise(selectedCat, dragIdx.current, dragOverIdx.current)
+                  dragIdx.current = null
+                  dragOverIdx.current = null
+                }}
+              >
+                <span
+                  style={{ color: 'var(--text-muted)', display: 'flex', cursor: 'grab', flexShrink: 0, touchAction: 'none' }}
+                  onMouseDown={e => e.stopPropagation()}
                 >
-                  <ChevronDown size={18} />
+                  <GripVertical size={16} />
+                </span>
+
+                <div style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
+                  <div style={{ fontWeight: 500, fontSize: '14px' }}>{ex.name}</div>
+                  <div className="text-xs text-muted" style={{ marginTop: 1 }}>
+                    {ex.defaultUnit}
+                    {maxW !== null && maxW > 0 && (
+                      <> · terakhir: <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+                        {ex.defaultUnit === 'BW' || ex.defaultUnit === 'SEC' ? `${maxW} reps` : `${maxW} ${ex.defaultUnit}`}
+                      </span></>
+                    )}
+                  </div>
                 </div>
+
+                <button
+                  onClick={(e) => { e.stopPropagation(); setEditExercise(ex) }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--accent)', padding: 6,
+                    display: 'flex', alignItems: 'center',
+                    borderRadius: 6, flexShrink: 0,
+                    transition: 'color 0.2s ease, background 0.2s ease',
+                  }}
+                  title="Catat berat"
+                >
+                  <Pencil size={14} />
+                </button>
+
+                <button
+                  onClick={(e) => { e.stopPropagation(); deleteExercise(ex.id) }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--text-muted)', padding: 6,
+                    display: 'flex', alignItems: 'center',
+                    borderRadius: 6, flexShrink: 0,
+                    transition: 'color 0.2s ease, background 0.2s ease',
+                  }}
+                  title="Hapus gerakan"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
-
-              {isExpanded && (
-                <div className="exercise-list-enter" style={{ marginTop: 4, marginBottom: 8 }}>
-                  {expandedExercises.length > 0 && (
-                    <div style={{ marginBottom: 10 }}>
-                      <div className="text-xs" style={{
-                        fontWeight: 500, textTransform: 'uppercase',
-                        letterSpacing: '0.3px', padding: '8px 0 6px 24px',
-                        color: meta.color, opacity: 0.8,
-                      }}>
-                        Gerakan
-                      </div>
-                      {expandedExercises.map((ex, idx) => {
-                        const lastSession = sorted.find(w =>
-                          w.exercises?.some(e => e.exerciseId === ex.id)
-                        )
-                        const lastEntry = lastSession?.exercises?.find(e => e.exerciseId === ex.id)
-                        const maxW = lastEntry ? getMaxWeight(lastEntry) : null
-
-                        return (
-                          <div
-                            key={ex.id}
-                            className="exercise-row-item"
-                            style={{ animationDelay: `${idx * 0.04}s` }}
-                            draggable
-                            onDragStart={() => { dragIdx.current = idx }}
-                            onDragEnter={() => { dragOverIdx.current = idx }}
-                            onDragOver={e => e.preventDefault()}
-                            onDrop={() => {
-                              reorderExercise(expandedCat, dragIdx.current, dragOverIdx.current)
-                              dragIdx.current = null
-                              dragOverIdx.current = null
-                            }}
-                          >
-                            <span
-                              style={{ color: 'var(--text-muted)', display: 'flex', cursor: 'grab', flexShrink: 0, touchAction: 'none' }}
-                              onMouseDown={e => e.stopPropagation()}
-                            >
-                              <GripVertical size={16} />
-                            </span>
-
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontWeight: 500, fontSize: '14px' }}>{ex.name}</div>
-                              <div className="text-xs text-muted" style={{ marginTop: 1 }}>
-                                {ex.defaultUnit}
-                                {maxW !== null && maxW > 0 && (
-                                  <> · terakhir: <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
-                                    {ex.defaultUnit === 'BW' || ex.defaultUnit === 'SEC' ? `${maxW} reps` : `${maxW} ${ex.defaultUnit}`}
-                                  </span></>
-                                )}
-                              </div>
-                            </div>
-
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setEditExercise(ex) }}
-                              style={{
-                                background: 'none', border: 'none', cursor: 'pointer',
-                                color: 'var(--accent)', padding: 6,
-                                display: 'flex', alignItems: 'center',
-                                borderRadius: 6, flexShrink: 0,
-                                transition: 'color 0.2s ease, background 0.2s ease',
-                              }}
-                              title="Catat berat"
-                            >
-                              <Pencil size={14} />
-                            </button>
-
-                            <button
-                              onClick={(e) => { e.stopPropagation(); deleteExercise(ex.id) }}
-                              style={{
-                                background: 'none', border: 'none', cursor: 'pointer',
-                                color: 'var(--text-muted)', padding: 6,
-                                display: 'flex', alignItems: 'center',
-                                borderRadius: 6, flexShrink: 0,
-                                transition: 'color 0.2s ease, background 0.2s ease',
-                              }}
-                              title="Hapus gerakan"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
-                  {expandedExercises.length === 0 && (
-                    <div style={{ padding: '14px 24px', marginLeft: 20, borderLeft: '2px solid var(--border)' }}>
-                      <p className="text-xs text-muted">
-                        Belum ada gerakan — tambahkan via tombol "+ Gerakan" di atas
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+          {categoryExercises.length === 0 && (
+            <p className="text-sm text-muted" style={{ padding: '14px 0' }}>
+              Belum ada gerakan — tambahkan via tombol "+ Gerakan" di atas
+            </p>
+          )}
+        </div>
+      )}
 
       {showAddExercise && (
         <AddExerciseModal
           onClose={() => setShowAddExercise(false)}
           onAdded={handleAddEx}
+          initialCategory={selectedCat}
         />
       )}
 
