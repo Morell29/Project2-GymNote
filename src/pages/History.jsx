@@ -5,11 +5,11 @@ import { useWorkouts, useExerciseLibrary } from '../hooks/useStorage'
 import { calculateVolume, getMaxWeight } from '../utils/workoutUtils'
 
 const CAT_META = {
-  'Push':        { Icon: ArrowUpFromLine, color: 'var(--push-color)',   bg: 'var(--push-bg)' },
-  'Pull':        { Icon: Dumbbell,        color: 'var(--pull-color)',   bg: 'var(--pull-bg)' },
-  'Leg':         { Icon: MoveDown,        color: 'var(--leg-color)',    bg: 'var(--leg-bg)' },
-  'Body Weight': { Icon: Activity,        color: 'var(--bw-color)',     bg: 'var(--bw-bg)' },
-  'Others':      { Icon: Zap,             color: 'var(--others-color)', bg: 'var(--others-bg)' },
+  'Push':        { Icon: ArrowUpFromLine, color: 'var(--push-color)' },
+  'Pull':        { Icon: Dumbbell,        color: 'var(--pull-color)' },
+  'Leg':         { Icon: MoveDown,        color: 'var(--leg-color)' },
+  'Body Weight': { Icon: Activity,        color: 'var(--bw-color)' },
+  'Others':      { Icon: Zap,             color: 'var(--others-color)' },
 }
 
 function getCategoryFromSession(session, library) {
@@ -36,198 +36,110 @@ function toDateKey(date) {
 
 function SessionItem({ session, library, onUpdateProgress, onDelete }) {
   const [exDetail, setExDetail] = useState(null)
-
   const category = getCategoryFromSession(session, library)
-  const meta     = CAT_META[category] || CAT_META['Others']
-  const exCount  = session.exercises?.length || 0
+  const exCount = session.exercises?.length || 0
   const totalVol = session.exercises?.reduce((s, ex) => s + calculateVolume(ex), 0) || 0
-  const dur      = formatDuration(session.duration)
+  const dur = formatDuration(session.duration)
 
   return (
-    <div style={{
-      background: 'var(--bg-card-2)', borderRadius: '6px',
-      marginBottom: 8, overflow: 'hidden', border: '1px solid var(--border)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '10px 12px', gap: 8 }}>
-        <div style={{
-          width: 30, height: 30, borderRadius: 6,
-          background: meta.bg, border: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <meta.Icon size={15} color={meta.color} />
-        </div>
+    <article className="history-session">
+      <div className="history-session-header">
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 500, fontSize: '13px', color: meta.color }}>
-            {session.category || session.name || 'Latihan'}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            {dur && <span className="text-xs text-muted">{dur}</span>}
-            <span className="text-xs text-muted">{exCount} gerakan</span>
-            {totalVol > 0 && <span className="text-xs text-muted">· {Math.round(totalVol)} vol</span>}
-          </div>
+          <p className="history-session-meta">
+            {exCount} gerakan{dur && ` · ${dur}`}{totalVol > 0 && ` · ${Math.round(totalVol)} vol`}
+          </p>
         </div>
         <button
-          className="btn btn-sm"
+          type="button"
+          className="history-action"
+          aria-label={`Perbarui latihan ${session.name || category}`}
           onClick={() => onUpdateProgress(session)}
-          style={{
-            background: meta.color, color: 'var(--text-on-accent)',
-            fontWeight: 500, fontSize: '12px', padding: '5px 10px', gap: 4,
+        >
+          <Pencil size={16} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="history-action"
+          aria-label={`Hapus sesi ${session.name || category}`}
+          onClick={() => {
+            if (window.confirm('Hapus sesi latihan ini? Data sesi akan dihapus permanen.')) onDelete(session.id)
           }}
         >
-          <Pencil size={12} />
-        </button>
-        <button
-          className="btn btn-ghost btn-sm btn-icon"
-          onClick={() => onDelete(session.id)}
-          style={{ color: 'var(--accent)', borderColor: 'var(--border-accent)', padding: 5 }}
-        >
-          <Trash2 size={14} />
+          <Trash2 size={16} aria-hidden="true" />
         </button>
       </div>
+      {exCount > 0 ? session.exercises.map(ex => {
+        const def = library.find(l => l.id === ex.exerciseId)
+        const maxW = getMaxWeight(ex)
+        const isOpen = exDetail === ex.exerciseId
+        const singleValue = ex.unit === 'BW' || ex.unit === 'SEC'
 
-      {exCount > 0 && (
-        <div style={{ padding: '0 12px 10px' }}>
-          {session.exercises.map(ex => {
-            const def    = library.find(l => l.id === ex.exerciseId)
-            const maxW   = getMaxWeight(ex)
-            const isOpen = exDetail === ex.exerciseId
-
-            return (
-              <div key={ex.exerciseId} style={{
-                background: 'var(--bg-card)', borderRadius: '6px',
-                marginBottom: 4, overflow: 'hidden', border: '1px solid var(--border)',
-              }}>
-                <div
-                  style={{ display: 'flex', alignItems: 'center', padding: '7px 10px', cursor: 'pointer', gap: 6 }}
-                  onClick={() => setExDetail(isOpen ? null : ex.exerciseId)}
-                >
-                  <span style={{ fontWeight: 500, fontSize: '13px', flex: 1 }}>
-                    {def?.name || ex.exerciseId}
-                  </span>
-                  <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                    {maxW > 0
-                      ? (ex.unit === 'BW' || ex.unit === 'SEC' ? ex.unit : `${maxW} ${ex.unit}`)
-                      : '—'}
-                  </span>
-                  <span className="text-xs text-muted">{ex.sets.length}×</span>
-                  {isOpen ? <ChevronUp size={12} color="var(--text-muted)" /> : <ChevronDown size={12} color="var(--text-muted)" />}
-                </div>
-
-                {isOpen && (
-                  <div style={{ padding: '0 10px 8px' }}>
-                    <div style={{
-                      display: 'grid', gridTemplateColumns: '28px 1fr 1fr',
-                      gap: 6, marginBottom: 6,
-                      fontSize: '11px', fontWeight: 500, color: 'var(--text-muted)',
-                      textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'center',
-                    }}>
-                      <span>Set</span>
-                      <span>{ex.unit === 'BW' ? 'Reps' : ex.unit === 'SEC' ? 'Detik' : 'Berat'}</span>
-                      <span>{ex.unit === 'BW' || ex.unit === 'SEC' ? '—' : 'Reps'}</span>
-                    </div>
-                    {ex.sets.map((s, idx) => (
-                      <div key={s.id || idx} style={{
-                        display: 'grid', gridTemplateColumns: '28px 1fr 1fr',
-                        gap: 6, marginBottom: 5,
-                      }}>
-                        <div className="set-num done" style={{ fontSize: '12px' }}>{idx + 1}</div>
-                        <div style={{
-                          textAlign: 'center', background: 'var(--bg-input)',
-                          borderRadius: 6, padding: '6px 4px', border: '1px solid var(--border)',
-                          fontSize: '14px', fontWeight: 500,
-                        }}>{s.weight || '—'}</div>
-                        <div style={{
-                          textAlign: 'center', background: 'var(--bg-input)',
-                          borderRadius: 6, padding: '6px 4px', border: '1px solid var(--border)',
-                          fontSize: '14px', fontWeight: 500,
-                        }}>{s.reps || '—'}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
+        return (
+          <div className="history-exercise" key={ex.exerciseId}>
+            <button
+              type="button"
+              className="history-exercise-toggle"
+              aria-expanded={isOpen}
+              onClick={() => setExDetail(isOpen ? null : ex.exerciseId)}
+            >
+              <span style={{ flex: 1, minWidth: 0 }}>{def?.name || ex.exerciseId}</span>
+              <span>{singleValue ? ex.unit : maxW > 0 ? `${maxW} ${ex.unit}` : '—'}</span>
+              <span className="history-session-meta">{ex.sets.length} set</span>
+              {isOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+            </button>
+            {isOpen && (
+              <table className="history-set-table" aria-label={`Set ${def?.name || ex.exerciseId}`}>
+                <thead>
+                  <tr>
+                    <th scope="col">Set</th>
+                    <th scope="col">{ex.unit === 'BW' ? 'Reps' : ex.unit === 'SEC' ? 'Detik' : `Berat (${ex.unit || 'KG'})`}</th>
+                    {!singleValue && <th scope="col">Reps</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {ex.sets.map((set, index) => (
+                    <tr key={set.id || index}>
+                      <th scope="row">{index + 1}</th>
+                      <td>{set.weight || '—'}</td>
+                      {!singleValue && <td>{set.reps || '—'}</td>}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )
+      }) : <p className="history-session-meta">Detail latihan belum diisi.</p>}
+    </article>
   )
 }
 
-function DayCard({ dateKey, sessions, library, onUpdateProgress, onDelete }) {
-  const [expanded, setExpanded] = useState(false)
-
+function DayGroup({ dateKey, sessions, library, onUpdateProgress, onDelete }) {
   const dateStr = new Date(dateKey + 'T00:00:00').toLocaleDateString('id-ID', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
 
-  const totalSessions = sessions.length
-  const totalExercises = sessions.reduce((s, w) => s + (w.exercises?.length || 0), 0)
-  const totalVol = sessions.reduce((s, w) =>
-    s + (w.exercises?.reduce((v, ex) => v + calculateVolume(ex), 0) || 0), 0)
-
-  const categories = [...new Set(sessions.map(s => getCategoryFromSession(s, library)))]
+  const categoryGroups = new Map()
+  sessions.forEach(session => {
+    const category = getCategoryFromSession(session, library)
+    if (!categoryGroups.has(category)) categoryGroups.set(category, [])
+    categoryGroups.get(category).push(session)
+  })
 
   return (
-    <div style={{
-      background: 'var(--bg-card)',
-      border: `1px solid ${expanded ? 'var(--border-hover)' : 'var(--border)'}`,
-      borderRadius: '6px', marginBottom: 10, overflow: 'hidden',
-      transition: 'border-color 0.2s',
-    }}>
-      <div
-        style={{ display: 'flex', alignItems: 'center', padding: '13px 14px', cursor: 'pointer', gap: 10 }}
-        onClick={() => setExpanded(p => !p)}
-      >
-        <div style={{
-          width: 36, height: 36, borderRadius: 6,
-          background: 'var(--bg-card-2)', border: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <Calendar size={18} color="var(--accent)" />
-        </div>
-
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 500, fontSize: '14px', color: 'var(--text-primary)', marginBottom: 2 }}>
-            {dateStr}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span className="text-xs text-muted">{totalSessions} sesi</span>
-            <span className="text-xs text-muted">· {totalExercises} gerakan</span>
-            {categories.map(cat => {
-              const meta = CAT_META[cat] || CAT_META['Others']
-              return (
-                <span key={cat} style={{
-                  fontSize: '10px', fontWeight: 500, color: meta.color,
-                  background: meta.bg, padding: '1px 6px', borderRadius: 4,
-                }}>{cat}</span>
-              )
-            })}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {totalVol > 0 && (
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>
-                {Math.round(totalVol)}
-              </div>
-              <div className="text-xs text-muted">vol</div>
-            </div>
-          )}
-          {expanded
-            ? <ChevronUp size={16} color="var(--text-muted)" />
-            : <ChevronDown size={16} color="var(--text-muted)" />
-          }
-        </div>
-      </div>
-
-      {expanded && (
-        <div style={{ padding: '0 14px 14px', borderTop: '1px solid var(--border)' }}>
-          <div style={{ paddingTop: 10 }}>
-            {sessions.map(session => (
+    <section className="history-day" aria-label={dateStr}>
+      <header className="history-day-header">
+        <h2><time dateTime={dateKey}>{dateStr}</time></h2>
+        <span className="history-session-meta">{sessions.length} sesi</span>
+      </header>
+      {[...categoryGroups].map(([category, categorySessions]) => {
+        const meta = CAT_META[category] || CAT_META['Others']
+        return (
+          <section key={category} aria-label={category}>
+            <h3 className="history-category-heading" style={{ color: meta.color }}>
+              <meta.Icon size={20} aria-hidden="true" /> {category}
+            </h3>
+            {categorySessions.map(session => (
               <SessionItem
                 key={session.id}
                 session={session}
@@ -236,10 +148,10 @@ function DayCard({ dateKey, sessions, library, onUpdateProgress, onDelete }) {
                 onDelete={onDelete}
               />
             ))}
-          </div>
-        </div>
-      )}
-    </div>
+          </section>
+        )
+      })}
+    </section>
   )
 }
 
@@ -281,9 +193,9 @@ export default function History() {
           <p>Selesaikan sesi latihan pertamamu</p>
         </div>
       ) : (
-        <div>
+        <div className="history-timeline">
           {grouped.map(([dateKey, sessions]) => (
-            <DayCard
+            <DayGroup
               key={dateKey}
               dateKey={dateKey}
               sessions={sessions}
@@ -299,6 +211,7 @@ export default function History() {
         <UpdateProgressModal
           session={updateSession}
           library={library}
+          setWorkouts={setWorkouts}
           onClose={() => setUpdateSession(null)}
         />
       )}

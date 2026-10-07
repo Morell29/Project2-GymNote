@@ -139,19 +139,9 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
           </button>
         </div>
 
-        <div
-          style={{
-            padding: '10px 12px',
-            background: meta.bg,
-            borderRadius: '6px',
-            border: '1px solid var(--border)',
-            marginBottom: 14,
-          }}
-        >
-          <p className="text-xs" style={{ color: meta.color, fontWeight: 500 }}>
-            Centang gerakan yang kamu lakukan, lalu isi berat & repetisi setiap set.
-          </p>
-        </div>
+        <p className="text-xs text-muted" style={{ marginBottom: 12 }}>
+          Centang gerakan yang kamu lakukan, lalu isi berat & repetisi setiap set.
+        </p>
 
         <div style={{ overflowY: 'auto', maxHeight: '52dvh', paddingRight: 2, marginBottom: 14 }}>
           {catExercises.length === 0 ? (
@@ -168,19 +158,16 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
                 <div
                   key={ex.id}
                   style={{
-                    marginBottom: 8,
-                    borderRadius: '6px',
-                    border: `1.5px solid ${isSelected ? 'var(--border-hover)' : 'var(--border)'}`,
-                    overflow: 'hidden',
-                    background: isSelected ? meta.bg : 'var(--bg-card-2)',
-                    transition: 'border-color 0.2s, background 0.2s',
+                    borderTop: '1px solid var(--border)',
+                    paddingBottom: 8,
+                    fontVariantNumeric: 'tabular-nums',
                   }}
                 >
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      padding: '11px 14px',
+                      padding: '10px 0',
                       gap: 10,
                     }}
                   >
@@ -247,12 +234,12 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
                   </div>
 
                   {isSelected && entry.expanded && (
-                    <div style={{ padding: '0 14px 12px' }}>
+                    <div style={{ paddingBottom: 4 }}>
                       <div
                         style={{
                           display: 'grid',
-                          gridTemplateColumns: '22px 1fr 1fr 30px',
-                          gap: 6,
+                          gridTemplateColumns: '26px minmax(44px, 1fr) minmax(44px, 1fr) 44px',
+                          gap: 8,
                           padding: '2px 0 7px',
                           fontSize: '11px',
                           fontWeight: 500,
@@ -275,9 +262,9 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
                           key={set.id}
                           style={{
                             display: 'grid',
-                            gridTemplateColumns: '22px 1fr 1fr 30px',
-                            gap: 6,
-                            marginBottom: 6,
+                            gridTemplateColumns: '26px minmax(44px, 1fr) minmax(44px, 1fr) 44px',
+                            gap: 8,
+                            marginBottom: 4,
                             alignItems: 'center',
                           }}
                         >
@@ -293,6 +280,7 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
                           </span>
                           <input
                             className="set-input"
+                            style={{ minHeight: 44, minWidth: 44, fontVariantNumeric: 'tabular-nums' }}
                             type="number"
                             inputMode="decimal"
                             placeholder={entry.unit === 'SEC' ? 'detik' : entry.unit === 'BW' ? 'reps' : '0'}
@@ -307,7 +295,7 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
                             value={set.reps}
                             onChange={e => updateSet(ex.id, set.id, 'reps', e.target.value)}
                             disabled={entry.unit === 'BW' || entry.unit === 'SEC'}
-                            style={{ opacity: (entry.unit === 'BW' || entry.unit === 'SEC') ? 0.4 : 1 }}
+                            style={{ minHeight: 44, minWidth: 44, fontVariantNumeric: 'tabular-nums', opacity: (entry.unit === 'BW' || entry.unit === 'SEC') ? 0.4 : 1 }}
                           />
                           <button
                             onClick={() => removeSet(ex.id, set.id)}
@@ -317,6 +305,10 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
                               cursor: 'pointer',
                               color: 'var(--text-muted)',
                               display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minWidth: 44,
+                              minHeight: 44,
                               padding: 4,
                             }}
                           >

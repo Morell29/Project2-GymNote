@@ -1303,3 +1303,71 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 .exercise-row-item[draggable]:active {
   opacity: 0.5;
 }
+
+.history-timeline {
+  border-left: 2px solid var(--border);
+  margin-left: 6px;
+  padding-left: 20px;
+}
+
+.history-day { position: relative; padding-bottom: 32px; }
+.history-day:last-child { padding-bottom: 0; }
+.history-day::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  outline: 4px solid var(--bg-base);
+}
+
+.history-day-header { margin-bottom: 12px; }
+.history-day-header h2 { font-size: 14px; font-weight: 600; }
+.history-session { padding: 12px 0; }
+.history-session + .history-session { border-top: 1px solid var(--border); }
+.history-session-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.history-category-heading { display: flex; align-items: center; gap: 8px; padding-top: 12px; font-size: 15px; overflow-wrap: anywhere; }
+.history-session-meta { font-size: 12px; color: var(--text-secondary); }
+
+.history-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.history-exercise { border-top: 1px solid var(--border); }
+.history-exercise-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 0;
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.history-exercise-toggle > span:first-child { overflow-wrap: anywhere; }
+.history-action:hover, .history-exercise-toggle:hover { background: var(--bg-hover); }
+.history-action:focus-visible, .history-exercise-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.history-set-table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; margin-bottom: 12px; }
+.history-set-table th, .history-set-table td { padding: 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.history-set-table th { font-weight: 500; color: var(--text-secondary); }
+.history-set-table th:first-child { text-align: left; }

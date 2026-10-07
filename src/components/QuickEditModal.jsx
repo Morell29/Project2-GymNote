@@ -99,7 +99,7 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
         </div>
 
         {editing && (
-          <div style={{ background: 'var(--bg-card-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px', marginBottom: 12 }}>
+          <div style={{ borderTop: '1px solid var(--border)', padding: '12px 0', marginTop: 12 }}>
             <p className="text-xs text-muted" style={{ marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Edit Gerakan</p>
             <input
               className="set-input"
@@ -141,12 +141,10 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
             style={{
               display: 'flex',
               alignItems: 'center',
+              flexWrap: 'wrap',
               gap: 8,
-              padding: '8px 12px',
-              background: 'var(--bg-card-2)',
-              borderRadius: '6px',
-              margin: '12px 0',
-              border: '1px solid var(--border)',
+              margin: '10px 0',
+              fontVariantNumeric: 'tabular-nums',
             }}
           >
             <span className="text-xs text-muted" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><BarChart2 size={12} /> Catatan terakhir:</span>
@@ -178,7 +176,7 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: isBW || isSEC ? '26px 1fr 28px' : '26px 1fr 1fr 28px',
+            gridTemplateColumns: isBW || isSEC ? '26px minmax(44px, 1fr) 44px' : '26px minmax(44px, 1fr) minmax(44px, 1fr) 44px',
             gap: 8,
             padding: '8px 0 6px',
             fontSize: '11px',
@@ -197,15 +195,15 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
           <span />
         </div>
 
-        <div style={{ marginBottom: 10 }}>
+        <div style={{ marginBottom: 10, fontVariantNumeric: 'tabular-nums' }}>
           {sets.map((set, idx) => (
             <div
               key={set.id}
               style={{
                 display: 'grid',
-                gridTemplateColumns: isBW || isSEC ? '26px 1fr 28px' : '26px 1fr 1fr 28px',
+                gridTemplateColumns: isBW || isSEC ? '26px minmax(44px, 1fr) 44px' : '26px minmax(44px, 1fr) minmax(44px, 1fr) 44px',
                 gap: 8,
-                marginBottom: 7,
+                marginBottom: 4,
                 alignItems: 'center',
               }}
             >
@@ -222,6 +220,7 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
 
               <input
                 className="set-input"
+                style={{ minHeight: 44, minWidth: 44, fontVariantNumeric: 'tabular-nums' }}
                 type="number"
                 inputMode="decimal"
                 placeholder={isSEC ? 'detik' : isBW ? 'reps' : '0'}
@@ -233,6 +232,7 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
               {!isBW && !isSEC && (
                 <input
                   className="set-input"
+                  style={{ minHeight: 44, minWidth: 44, fontVariantNumeric: 'tabular-nums' }}
                   type="number"
                   inputMode="numeric"
                   placeholder="reps"
@@ -246,7 +246,8 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
                 style={{
                   background: 'none', border: 'none',
                   cursor: 'pointer', color: 'var(--text-muted)',
-                  display: 'flex', padding: 4,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4,
+                  minWidth: 44, minHeight: 44,
                   opacity: sets.length === 1 ? 0.3 : 1,
                 }}
                 disabled={sets.length === 1}
