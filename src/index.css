@@ -958,19 +958,41 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 .cat-tab.active-others { background: var(--others-bg); border-color: var(--others-color); color: var(--others-color); }
 
 /* Overload Exercise Row */
+.overload-group {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 16px 8px;
+  margin-bottom: 24px;
+}
+
+.overload-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 16px;
+}
+
 .overload-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  margin-bottom: 8px;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 4px;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
   transition: var(--transition);
-  cursor: default;
+  cursor: pointer;
 }
-.overload-row:hover { border-color: var(--border-hover); background: var(--bg-hover); }
+.overload-row:hover { background: var(--bg-hover); }
+.overload-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.overload-row-edit { color: var(--text-secondary); flex-shrink: 0; }
 
 .overload-row-name {
   font-size: 14px;

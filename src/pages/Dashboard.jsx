@@ -464,16 +464,8 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div
-        style={{
-          background: 'var(--bg-card)',
-          borderRadius: '24px',
-          padding: '16px',
-          border: '1px solid var(--border)',
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+      <div className="overload-group">
+        <div className="overload-group-header">
           <activeCat.Icon size={16} color={CAT_COLORS[activeCat.colorClass]} />
           <span style={{ fontWeight: 500, fontSize: '14px', color: CAT_COLORS[activeCat.colorClass] }}>
             {activeCat.label}
@@ -492,10 +484,10 @@ export default function Dashboard() {
           catExercises.map(ex => {
             const { weight, unit, trend, prevWeight, repsTrend, readyUp } = getLastWeight(workouts, ex.id)
             return (
-              <div
+              <button
                 key={ex.id}
+                type="button"
                 className="overload-row"
-                style={{ cursor: 'pointer', position: 'relative' }}
                 onClick={() => setEditExercise(ex)}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -526,21 +518,9 @@ export default function Dashboard() {
                       <div className="text-xs" style={{ color: 'var(--accent)', fontWeight: 500 }}>+ Catat</div>
                     )}
                   </div>
-                  <div
-                    style={{
-                      width: 30, height: 30,
-                      borderRadius: 6,
-                      background: 'var(--bg-card-2)',
-                      border: '1px solid var(--border)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--text-muted)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Pencil size={13} />
-                  </div>
+                  <Pencil size={14} className="overload-row-edit" aria-hidden="true" />
                 </div>
-              </div>
+              </button>
             )
           })
         )}
