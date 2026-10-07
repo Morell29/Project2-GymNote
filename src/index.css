@@ -167,6 +167,83 @@ p  { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 
 .page-header .accent { color: var(--accent); }
 
+.dashboard-hero {
+  background: var(--bg-dark);
+  color: var(--text-on-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.dashboard-hero-top {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-on-dark-secondary);
+  margin-bottom: 16px;
+}
+
+.dashboard-hero h1 {
+  font-size: clamp(28px, 8vw, 36px);
+  font-weight: 600;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-hero-detail {
+  color: var(--text-on-dark-secondary);
+  margin: 10px 0 24px;
+}
+
+.dashboard-hero-history {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  margin: 8px auto -8px;
+  padding: 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-on-dark-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dashboard-hero-history:hover { color: var(--text-on-dark); }
+
+.dashboard-calendar {
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-calendar summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.dashboard-calendar summary::-webkit-details-marker { display: none; }
+.dashboard-calendar-chevron { margin-left: auto; }
+.dashboard-calendar[open] .dashboard-calendar-chevron { transform: rotate(90deg); }
+.dashboard-calendar-content { padding: 8px 4px 16px; }
+
+.dashboard-hero button:focus-visible,
+.dashboard-calendar summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
 /* === CARDS — flat, hairline border, no shadow === */
 .card {
   background: var(--bg-card);

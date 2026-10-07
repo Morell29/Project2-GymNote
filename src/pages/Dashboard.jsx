@@ -263,6 +263,9 @@ export default function Dashboard() {
   }
 
   const catExercises = library.filter(ex => ex.category === activeTab)
+  const latestSession = workouts.reduce((latest, session) => (
+    !latest || new Date(session.date) > new Date(latest.date) ? session : latest
+  ), null)
 
   return (
     <div className="page">
@@ -271,19 +274,45 @@ export default function Dashboard() {
 
 
 
-      <button
-        className="btn btn-primary btn-full mb-4"
-        id="btn-catat-latihan"
-        onClick={() => setShowQuickLog(true)}
-        style={{ fontSize: '16px', padding: '16px 24px' }}
-      >
-        <Plus size={19} />
-        <span className="text-shimmer">Catat Latihan</span>
-      </button>
+      <section className="dashboard-hero" aria-labelledby="latest-session-heading">
+        <div className="dashboard-hero-top">
+          <span>Sesi terakhir</span>
+          {latestSession && (
+            <time dateTime={latestSession.date}>
+              {new Date(latestSession.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </time>
+          )}
+        </div>
+        <h1 id="latest-session-heading">{latestSession ? latestSession.name || latestSession.category : 'Mulai catatan latihanmu'}</h1>
+        <p className="dashboard-hero-detail">
+          {latestSession
+            ? latestSession.exercises.length > 0
+              ? `${latestSession.exercises.length} latihan tercatat. Lanjutkan progresmu di sesi berikutnya.`
+              : 'Sesi tercatat. Detail latihan belum diisi.'
+            : 'Catat sesi pertama untuk mulai melihat progresmu.'}
+        </p>
+        <button
+          className="btn btn-primary btn-full"
+          id="btn-catat-latihan"
+          onClick={() => setShowQuickLog(true)}
+        >
+          <Plus size={19} aria-hidden="true" />
+          Catat Latihan
+        </button>
+        {latestSession && (
+          <button className="dashboard-hero-history" onClick={() => navigate('/history')}>
+            Lihat riwayat <ChevronRight size={14} aria-hidden="true" />
+          </button>
+        )}
+      </section>
 
-
-
-      <div className="card calendar-border-trail mb-4">
+      <details className="dashboard-calendar mb-4">
+        <summary>
+          <Calendar size={16} aria-hidden="true" />
+          <span>Kalender latihan</span>
+          <ChevronRight size={16} className="dashboard-calendar-chevron" aria-hidden="true" />
+        </summary>
+        <div className="dashboard-calendar-content">
         <div className="section-header">
           <button onClick={prevMonth} className="btn btn-ghost btn-icon btn-sm" style={{ padding: 6 }}>
             <ChevronLeft size={16} />
@@ -353,7 +382,8 @@ export default function Dashboard() {
             </span>
           </div>
         )}
-      </div>
+        </div>
+      </details>
 
       {calExpanded && (
         <CalendarModal
