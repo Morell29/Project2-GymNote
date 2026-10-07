@@ -19,6 +19,10 @@
   --accent-bright: #e8324a;
   --accent-glow: rgba(223, 28, 47, 0.15);
   --accent-glow-sm: rgba(223, 28, 47, 0.08);
+  --danger: #9f1239;
+  --danger-bg: rgba(159, 18, 57, 0.08);
+  --danger-border: rgba(159, 18, 57, 0.3);
+  --trend-negative: #925700;
 
   /* Backgrounds — Charcoal + White surfaces */
   --bg-base: #f7f7f7;
@@ -72,6 +76,10 @@
 }
 
 [data-theme="dark"] {
+  --danger: #fda4af;
+  --danger-bg: rgba(253, 164, 175, 0.08);
+  --danger-border: rgba(253, 164, 175, 0.3);
+  --trend-negative: #fbbf24;
   --bg-base: #111214;
   --bg-dark: #1a1c1f;
   --bg-card: #1e2023;
@@ -143,12 +151,6 @@ p  { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
   max-width: 480px;
   margin: 0 auto;
   width: 100%;
-  animation: fadeIn 0.25s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* === PAGE HEADER === */
@@ -255,45 +257,6 @@ p  { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 
 .card:hover { border-color: var(--border-hover); }
 
-@property --calendar-trail-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-.calendar-border-trail {
-  position: relative;
-}
-
-.calendar-border-trail::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  pointer-events: none;
-  background: conic-gradient(
-    from var(--calendar-trail-angle),
-    transparent 0deg 280deg,
-    rgb(255 255 255 / 15%) 310deg,
-    white 350deg,
-    transparent 360deg
-  );
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  animation: calendar-border-trail 6s linear infinite;
-}
-
-@keyframes calendar-border-trail {
-  to { --calendar-trail-angle: 360deg; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .calendar-border-trail::after {
-    animation: none;
-  }
-}
-
 .card-accent {
   border-color: var(--border-accent);
 }
@@ -321,37 +284,6 @@ p  { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
   color: var(--text-on-accent);
 }
 .btn-primary:hover { background: var(--accent-dim); }
-.btn-primary:active { transform: scale(0.98); }
-
-.text-shimmer {
-  background: linear-gradient(110deg, currentColor 40%, #ffb8c0 50%, currentColor 60%);
-  background-size: 250% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: text-shimmer 1s linear infinite;
-}
-
-@keyframes text-shimmer {
-  from { background-position: 100% 0; }
-  to { background-position: 0% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .text-shimmer {
-    animation: none;
-    background: none;
-    -webkit-text-fill-color: currentColor;
-  }
-}
-
-@media (forced-colors: active) {
-  .text-shimmer {
-    animation: none;
-    background: none;
-    -webkit-text-fill-color: currentColor;
-  }
-}
 
 .btn-ghost {
   background: transparent;
@@ -361,11 +293,11 @@ p  { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 .btn-ghost:hover { background: var(--bg-hover); border-color: var(--border-hover); }
 
 .btn-danger {
-  background: rgba(223, 28, 47, 0.06);
-  color: var(--accent);
-  border: 1px solid var(--border-accent);
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
-.btn-danger:hover { background: rgba(223, 28, 47, 0.12); }
+.btn-danger:hover { background: var(--danger-bg); border-color: var(--danger); }
 
 .btn-sm { padding: 8px 16px; font-size: 14px; }
 .btn-lg { padding: 16px 28px; font-size: 16px; }
@@ -872,7 +804,7 @@ select.input {
 }
 
 .overload-up { color: #2d9d4a; }
-.overload-down { color: var(--accent); }
+.overload-down { color: var(--trend-negative); }
 .overload-same { color: var(--text-muted); }
 
 /* === TOGGLE SWITCH === */
@@ -1034,7 +966,7 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 }
 
 .trend-up   { color: #2d9d4a; }
-.trend-down { color: var(--accent); }
+.trend-down { color: var(--trend-negative); }
 .trend-same { color: var(--text-muted); }
 .trend-new  { color: var(--accent); }
 
@@ -1116,10 +1048,6 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
    ANIMATIONS & TRANSITIONS
    ================================================ */
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -1131,27 +1059,6 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 @keyframes slideDown {
   from { opacity: 0; max-height: 0; transform: translateY(-8px); }
   to   { opacity: 1; max-height: 600px; transform: translateY(0); }
-}
-
-/* Apply to page children */
-.page > * {
-  animation: fadeInUp 0.35s ease both;
-}
-.page > *:nth-child(1)  { animation-delay: 0s; }
-.page > *:nth-child(2)  { animation-delay: 0.03s; }
-.page > *:nth-child(3)  { animation-delay: 0.06s; }
-.page > *:nth-child(4)  { animation-delay: 0.09s; }
-.page > *:nth-child(5)  { animation-delay: 0.12s; }
-.page > *:nth-child(6)  { animation-delay: 0.15s; }
-.page > *:nth-child(7)  { animation-delay: 0.18s; }
-.page > *:nth-child(8)  { animation-delay: 0.21s; }
-.page > *:nth-child(9)  { animation-delay: 0.24s; }
-.page > *:nth-child(10) { animation-delay: 0.27s; }
-.page > *:nth-child(n+11) { animation-delay: 0.30s; }
-
-/* Animate overload rows */
-.overload-row {
-  animation: fadeInUp 0.3s ease both;
 }
 
 /* Smooth modal entrance */
@@ -1166,24 +1073,15 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 .btn {
   transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
-.btn:active {
-  transform: scale(0.97);
-}
 
 /* Smooth card interactions */
 .card, .greeting-card, .overload-row, .history-item {
   transition: transform 0.18s ease, border-color 0.25s ease, background 0.2s ease;
 }
-.overload-row:active, .history-item:active {
-  transform: scale(0.99);
-}
 
 /* Category tab transitions */
 .cat-tab {
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-}
-.cat-tab:active {
-  transform: scale(0.96);
 }
 
 /* Calendar day hover */
@@ -1213,7 +1111,6 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  animation: fadeIn 0.6s ease 0.1s both;
 }
 
 /* ================================================
@@ -1237,9 +1134,6 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
   cursor: pointer;
   transition: all 0.25s ease;
   width: 100%;
-}
-.cat-list-item:active {
-  transform: scale(0.99);
 }
 .cat-list-item:focus-visible {
   outline: 2px solid var(--accent);
@@ -1287,7 +1181,6 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
   border-left: 2px solid var(--border);
   cursor: default;
   transition: background 0.2s ease, border-color 0.2s ease;
-  animation: fadeInUp 0.3s ease both;
 }
 .category-exercises .exercise-row-item {
   margin-left: 0;
@@ -1371,3 +1264,10 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 .history-set-table th, .history-set-table td { padding: 8px; text-align: right; border-bottom: 1px solid var(--border); }
 .history-set-table th { font-weight: 500; color: var(--text-secondary); }
 .history-set-table th:first-child { text-align: left; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

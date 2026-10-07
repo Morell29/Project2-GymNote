@@ -60,6 +60,7 @@ function SessionItem({ session, library, onUpdateProgress, onDelete }) {
         <button
           type="button"
           className="history-action"
+          style={{ color: 'var(--danger)' }}
           aria-label={`Hapus sesi ${session.name || category}`}
           onClick={() => {
             if (window.confirm('Hapus sesi latihan ini? Data sesi akan dihapus permanen.')) onDelete(session.id)

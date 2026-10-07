@@ -51,7 +51,7 @@ function AddExerciseModal({ onClose, onAdded, initialCategory }) {
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
             autoFocus
           />
-          {error && <p className="text-xs" style={{ color: 'var(--accent)', marginTop: 4 }}>{error}</p>}
+          {error && <p className="text-xs" style={{ color: 'var(--danger)', marginTop: 4 }}>{error}</p>}
         </div>
 
         <div className="input-group mb-3">
@@ -209,7 +209,6 @@ export default function WorkoutLogger() {
               <div
                 key={ex.id}
                 className="exercise-row-item"
-                style={{ animationDelay: `${idx * 0.04}s` }}
                 draggable
                 onDragStart={() => { dragIdx.current = idx }}
                 onDragEnter={() => { dragOverIdx.current = idx }}
@@ -257,7 +256,7 @@ export default function WorkoutLogger() {
                   onClick={(e) => { e.stopPropagation(); deleteExercise(ex.id) }}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--text-muted)', padding: 6,
+                    color: 'var(--danger)', padding: 6,
                     display: 'flex', alignItems: 'center',
                     borderRadius: 6, flexShrink: 0,
                     transition: 'color 0.2s ease, background 0.2s ease',

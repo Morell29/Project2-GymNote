@@ -303,7 +303,7 @@ export default function UpdateProgressModal({ session, library, onClose, setWork
                               background: 'none',
                               border: 'none',
                               cursor: 'pointer',
-                              color: 'var(--text-muted)',
+                              color: 'var(--danger)',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',

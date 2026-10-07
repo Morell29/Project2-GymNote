@@ -169,9 +169,9 @@ export default function Settings() {
             <div style={{
               padding: '10px 14px',
               borderRadius: 6,
-              background: importMsg.type === 'success' ? 'rgba(45,157,74,0.06)' : 'rgba(223,28,47,0.06)',
-              border: `1px solid ${importMsg.type === 'success' ? 'rgba(45,157,74,0.2)' : 'rgba(223,28,47,0.2)'}`,
-              color: importMsg.type === 'success' ? '#2d9d4a' : 'var(--accent)',
+              background: importMsg.type === 'success' ? 'rgba(45,157,74,0.06)' : 'var(--danger-bg)',
+              border: `1px solid ${importMsg.type === 'success' ? 'rgba(45,157,74,0.2)' : 'var(--danger-border)'}`,
+              color: importMsg.type === 'success' ? '#2d9d4a' : 'var(--danger)',
               fontSize: '14px',
               fontWeight: 500,
               display: 'flex',
@@ -194,8 +194,8 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="card" style={{ border: '1px solid var(--border-accent)' }}>
-        <h2 className="mb-3" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={18} /> Danger Zone</h2>
+      <div className="card" style={{ border: '1px solid var(--danger-border)' }}>
+        <h2 className="mb-3" style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={18} /> Danger Zone</h2>
         <p className="text-sm text-muted mb-3">Hapus semua sesi latihan. Tindakan ini tidak bisa dibatalkan.</p>
         {confirmClear && (
           <div style={{ marginBottom: 10 }}>
@@ -215,9 +215,9 @@ export default function Settings() {
           className={`btn btn-full ${confirmClear ? 'btn-danger' : 'btn-ghost'}`}
           onClick={handleClearData}
           disabled={confirmClear && confirmText !== 'Ya'}
-          style={{ borderColor: 'var(--border-accent)' }}
+          style={{ borderColor: 'var(--danger-border)' }}
         >
-          <Trash2 size={16} />
+          <Trash2 size={16} color="var(--danger)" />
           {confirmClear ? 'Konfirmasi Hapus' : 'Hapus Semua Sesi'}
         </button>
         {confirmClear && (

@@ -245,7 +245,7 @@ export default function QuickEditModal({ exercise, workouts, onClose, setWorkout
                 onClick={() => removeSet(set.id)}
                 style={{
                   background: 'none', border: 'none',
-                  cursor: 'pointer', color: 'var(--text-muted)',
+                  cursor: 'pointer', color: 'var(--danger)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4,
                   minWidth: 44, minHeight: 44,
                   opacity: sets.length === 1 ? 0.3 : 1,

@@ -38,7 +38,7 @@ function TrendBadge({ trend }) {
   if (!trend) return <span style={{ color: '#a8acb1', fontSize: 11 }}>—</span>
   const map = {
     up:   { icon: '↗', color: '#2d9d4a', label: 'Naik' },
-    down: { icon: '↘', color: '#df1c2f', label: 'Turun' },
+    down: { icon: '↘', color: '#fbbf24', label: 'Turun' },
     same: { icon: '→', color: '#a8acb1', label: 'Sama' },
     new:  { icon: null, color: '#df1c2f', label: 'Pertama' },
   }
