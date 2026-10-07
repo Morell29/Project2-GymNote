@@ -992,7 +992,6 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
 }
 .overload-row:hover { background: var(--bg-hover); }
 .overload-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.overload-row-edit { color: var(--text-secondary); flex-shrink: 0; }
 
 .overload-row-name {
   font-size: 14px;
@@ -1005,14 +1004,28 @@ input:checked + .toggle-slider::after { left: calc(100% - 22px); background: var
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  flex-shrink: 0;
+  gap: 4px;
 }
 
 .overload-row-weight {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
-  line-height: 1;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.overload-row-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.overload-row-caption {
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
 .overload-row-trend {

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Pencil, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, X } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, ChevronRight, ChevronLeft, Plus, Maximize2, Minimize2, StickyNote, ArrowUpFromLine, Dumbbell, MoveDown, Activity, Zap, Flame, Calendar, X } from 'lucide-react'
 import { useLocalStorage, useWorkouts, useExerciseLibrary, useSettings, useCalNotes } from '../hooks/useStorage'
 import { getMaxWeight, getMaxReps, calculateStreak, getWorkoutDays } from '../utils/workoutUtils'
 import ExportButton from '../components/ExportButton'
@@ -488,6 +488,7 @@ export default function Dashboard() {
                 key={ex.id}
                 type="button"
                 className="overload-row"
+                aria-label={`Catat latihan ${ex.name}`}
                 onClick={() => setEditExercise(ex)}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -505,20 +506,21 @@ export default function Dashboard() {
                     <div className="text-xs text-muted" style={{ marginTop: 2 }}>Tap untuk mulai catat</div>
                   )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  <div className="overload-row-meta">
-                    {weight !== null ? (
-                      <>
-                        <div className="overload-row-weight">
-                          {unit === 'BW' || unit === 'SEC' ? unit : `${weight} ${unit}`}
-                        </div>
-                        <div className="text-xs text-muted">terakhir</div>
-                      </>
-                    ) : (
-                      <div className="text-xs" style={{ color: 'var(--accent)', fontWeight: 500 }}>+ Catat</div>
-                    )}
-                  </div>
-                  <Pencil size={14} className="overload-row-edit" aria-hidden="true" />
+                <div className="overload-row-meta">
+                  {weight !== null ? (
+                    <>
+                      <div className="overload-row-weight">
+                        {unit === 'BW' || unit === 'SEC' ? (
+                          <span className="overload-row-unit">{unit}</span>
+                        ) : (
+                          <>{weight} <span className="overload-row-unit">{unit}</span></>
+                        )}
+                      </div>
+                      <div className="overload-row-caption">terakhir</div>
+                    </>
+                  ) : (
+                    <div className="text-xs" style={{ color: 'var(--accent)', fontWeight: 500 }}>+ Catat</div>
+                  )}
                 </div>
               </button>
             )
